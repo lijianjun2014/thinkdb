@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+<script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+<link href="/static/css/date/bootstrap-datepicker.css" rel="stylesheet">
+    <link href="/static/css/date/bootstrap-datepicker.min.css" rel="stylesheet">
+    <link href="/static/css/date/bootstrap-datepicker.standalone.css" rel="stylesheet">
+    <link href="/static/css/date/bootstrap-datepicker.standalone.min.css" rel="stylesheet">
+
+<script src="/static/js/plugins/bootstrap-datepicker.js"></script>
+<script src="/static/js/plugins/bootstrap-datepicker.min.js"></script>
+</head>
+<body>
+<div class="input-daterange" id="datepicker">
+    <input type="text" class="input-small" name="start" />
+    <span class="add-on">to</span>
+    <input type="text" class="input-small" name="end" />
+</div>
+</body>
+<script>
+$('#sandbox-container .input-daterange').datepicker({
+    todayBtn: "linked",
+    clearBtn: true,
+    todayHighlight: true
+});
+</script>
+</html>

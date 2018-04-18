@@ -1,0 +1,80 @@
+    {% extends 'base.html' %}
+    {% block changeprofile %}
+			<ul class="breadcrumb">
+				<li>
+					<i class="icon-home"></i>
+					<a href="/backend/">Home</a>
+					<i class="icon-angle-right"></i>
+				</li>
+				<li>
+					<i class="icon-edit"></i>
+					<a href="#">ChangeProfile</a>
+				</li>
+			</ul>
+
+
+
+			<div class="row-fluid sortable">
+				<div class="box span12">
+					<div class="box-header" data-original-title>
+						<h2><i class="halflings-icon white edit"></i><span class="break"></span>修改资料</h2>
+						<div class="box-icon">
+							<a href="#" class="btn-setting"><i class="halflings-icon white wrench"></i></a>
+							<a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+							<a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+						</div>
+					</div>
+					<div class="box-content">
+						<form class="form-horizontal" method="post">
+                             {% csrf_token %}
+							<fieldset>
+							  <div class="control-group">
+								<label class="control-label">ID:</label>
+								<div class="controls">
+								  <span class="input-xlarge uneditable-input" >{{ userid }}</span>
+								</div>
+							  </div>
+                              <div class="control-group">
+								<label class="control-label">username:</label>
+								<div class="controls">
+								  <span class="input-xlarge uneditable-input" >{{ username }}</span>
+								</div>
+							  </div>
+                              <div class="control-group error">
+								<label class="control-label" for="inputError">Old Password:</label>
+								<div class="controls">
+								  <input type="text" id="inputError" name="old_password">
+
+								</div>
+							  </div>
+							  <div class="control-group warning">
+								<label class="control-label">Email:</label>
+								<div class="controls">
+								  <input type="text" name="email" value="{{ email }}">
+
+								</div>
+							  </div>
+
+							  <div class="control-group success">
+								<label class="control-label" for="inputSuccess">New Password:</label>
+								<div class="controls">
+								  <input type="text" id="inputSuccess" name="new_password">
+                                    <!--<span><font color="red">{{message}}</font></span>-->
+                                    {{message|safe}}
+								</div>
+							  </div>
+
+
+							  <div class="form-actions">
+								<button type="submit" class="btn btn-primary">Save changes</button>
+
+							  </div>
+							</fieldset>
+						  </form>
+
+					</div>
+				</div><!--/span-->
+
+			</div><!--/row-->
+
+    {% endblock %}

@@ -1,0 +1,174 @@
+
+			
+			{% extends 'base.html' %}
+			{% block form %}
+			<ul class="breadcrumb">
+				<li>
+					<i class="icon-home"></i>
+					<a href="/thinkdb/">后台主页</a>
+					<i class="icon-angle-right"></i> 
+				</li>
+				<li>
+					<i class="icon-edit"></i>
+					<a href="#">{{href_name}}</a>
+				</li>
+			</ul>
+
+			<div class="row-fluid sortable">
+				<div class="box span12">
+					<div class="box-header" data-original-title>
+						<h2><i class="halflings-icon white edit"></i><span class="break"></span>添加数据库实例</h2>
+						<div class="box-icon">
+
+						</div>
+					</div>
+					<div class="box-content">
+						<form class="form-horizontal" method="post">
+                             {% csrf_token %}
+							<fieldset>
+
+                                <div class="control-group">
+                                   <label class="control-label" for="focusedInput">填表人:</label>
+								<div class="controls">
+
+                                  {{objForm.add_user}}
+
+                                  {% if error.add_user.0 %}
+                                  <span>{{error.add_user.0}}</span>
+                                  {% endif %}
+                                </div></div>
+								<div class="control-group">
+                                   <label class="control-label" for="focusedInput">数据库标识:</label>
+								<div class="controls">
+                                  <!-- 接收从后台穿过来的FORM对象，自动生成INPUT -->
+                                  {{objForm.db_tag}}
+                                  <!-- 如果后台返回了错误信息，则将信息放入Span标签，否则不显示！-->
+                                  {% if error.db_tag.0 %}
+                                  <span>{{error.db_tag.0}}</span>
+                                  {% endif %}
+                                </div></div>
+                                <div class="control-group">
+                                   <label class="control-label" for="focusedInput">所属集群:</label>
+								<div class="controls">
+                                  <!-- 接收从后台穿过来的FORM对象，自动生成INPUT -->
+                                  {{objForm.cluster}}
+                                  <!-- 如果后台返回了错误信息，则将信息放入Span标签，否则不显示！-->
+                                  {% if error.cluster.0 %}
+                                  <span>{{error.cluster.0}}</span>
+                                  {% endif %}
+                                </div></div>
+                                <div class="control-group">
+                                   <label class="control-label" for="focusedInput"> 数据库类别:</label>
+								<div class="controls">
+                                  <!-- 接收从后台穿过来的FORM对象，自动生成INPUT -->
+                                  {{objForm.type}}
+                                  <!-- 如果后台返回了错误信息，则将信息放入Span标签，否则不显示！-->
+                                  {% if error.type.0 %}
+                                  <span>{{error.type.0}}</span>
+                                  {% endif %}
+                                </div></div>
+                                <div class="control-group">
+                                   <label class="control-label" for="focusedInput">数据库版本:</label>
+								<div class="controls">
+                                  <!-- 接收从后台穿过来的FORM对象，自动生成INPUT -->
+                                  {{objForm.version}}
+                                  <!-- 如果后台返回了错误信息，则将信息放入Span标签，否则不显示！-->
+                                  {% if error.version.0 %}
+                                  <span>{{error.version.0}}</span>
+                                  {% endif %}
+                                </div></div>
+                                <div class="control-group">
+                                   <label class="control-label" for="focusedInput">IP地址:</label>
+								<div class="controls">
+                                  <!-- 接收从后台穿过来的FORM对象，自动生成INPUT -->
+                                  {{objForm.ip}}
+                                  <!-- 如果后台返回了错误信息，则将信息放入Span标签，否则不显示！-->
+                                  {% if error.ip.0 %}
+                                  <span>{{error.ip.0}}</span>
+                                  {% endif %}
+                                </div></div>
+                                <div class="control-group">
+                                   <label class="control-label" for="focusedInput">端口:</label>
+								<div class="controls">
+                                  <!-- 接收从后台穿过来的FORM对象，自动生成INPUT -->
+                                  {{objForm.port}}
+                                  <!-- 如果后台返回了错误信息，则将信息放入Span标签，否则不显示！-->
+                                  {% if error.port.0 %}
+                                  <span>{{error.port.0}}</span>
+                                  {% endif %}
+                                </div></div>
+                                <div class="control-group">
+                                   <label class="control-label" for="focusedInput">用户:</label>
+								<div class="controls">
+                                  <!-- 接收从后台穿过来的FORM对象，自动生成INPUT -->
+                                  {{objForm.user}}
+                                  <!-- 如果后台返回了错误信息，则将信息放入Span标签，否则不显示！-->
+                                  {% if error.user.0 %}
+                                  <span>{{error.user.0}}</span>
+                                  {% endif %}
+                                </div></div>
+                                <div class="control-group">
+                                   <label class="control-label" for="focusedInput">密码:</label>
+								<div class="controls">
+                                  <!-- 接收从后台穿过来的FORM对象，自动生成INPUT -->
+                                  {{objForm.password}}
+                                  <!-- 如果后台返回了错误信息，则将信息放入Span标签，否则不显示！-->
+                                  {% if error.password.0 %}
+                                  <span>{{error.password.0}}</span>
+                                  {% endif %}
+                                </div></div>
+                                <div class="control-group">
+                                   <label class="control-label" for="focusedInput">主从关系:</label>
+								<div class="controls">
+                                  <!-- 接收从后台穿过来的FORM对象，自动生成INPUT -->
+                                  {{objForm.is_master}}
+                                  <!-- 如果后台返回了错误信息，则将信息放入Span标签，否则不显示！-->
+                                  {% if error.is_master.0 %}
+                                  <span>{{error.is_master.0}}</span>
+                                  {% endif %}
+                                </div></div>
+                                <div class="control-group">
+                                   <label class="control-label" for="focusedInput">主库ID:</label>
+								<div class="controls">
+                                  <!-- 接收从后台穿过来的FORM对象，自动生成INPUT -->
+                                  {{objForm.master_id}}
+                                  <!-- 如果后台返回了错误信息，则将信息放入Span标签，否则不显示！-->
+                                  {% if error.master_id.0 %}
+                                  <span>{{error.master_id.0}}</span>
+                                  {% endif %}
+                                </div></div>
+                                <div class="control-group">
+                                   <label class="control-label" for="focusedInput">是否上线:</label>
+								<div class="controls">
+                                  <!-- 接收从后台穿过来的FORM对象，自动生成INPUT -->
+                                  {{objForm.is_online}}
+                                  <!-- 如果后台返回了错误信息，则将信息放入Span标签，否则不显示！-->
+                                  {% if error.is_online.0 %}
+                                  <span>{{error.is_online.0}}</span>
+                                  {% endif %}
+                                </div></div>
+                                <div class="control-group">
+                                   <label class="control-label" for="focusedInput">数据库说明:</label>
+								<div class="controls">
+                                  <!-- 接收从后台穿过来的FORM对象，自动生成INPUT -->
+                                  {{objForm.introduction}}
+                                  <!-- 如果后台返回了错误信息，则将信息放入Span标签，否则不显示！-->
+                                  {% if error.introduction.0 %}
+                                  <span>{{error.introduction.0}}</span>
+                                  {% endif %}
+                                </div></div>
+
+                                <div class="form-actions">
+								<button type="submit" class="btn btn-primary">提交</button>
+                                {{message |safe}}
+							  </div>
+							</fieldset>
+						  </form>
+					
+					</div>
+				</div><!--/span-->
+			
+			</div><!--/row-->
+			
+
+    		{% endblock %}

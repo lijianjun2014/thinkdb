@@ -1,0 +1,215 @@
+			{% extends 'base.html' %}
+			{% block databases %}
+
+			<ul class="breadcrumb">
+				<li>
+					<i class="icon-home"></i>
+					<a href="{{url_for('index')}}">Home</a>
+					<i class="icon-angle-right"></i>
+				</li>
+				<li><a href="{{url_for('dbcenter')}}">{{sub_title}}</a></li>
+			</ul>
+
+			<div class="row-fluid sortable">
+				<div class="box span12">
+					<div class="box-header">
+						<h2><i class="halflings-icon white align-justify"></i><span class="break"></span>数据中心</h2>
+						<div class="box-icon">
+							<a href="{{url_for('newdbtype')}}"><i class="halflings-icon white wrench"></i></a>
+							<a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+							<a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+						</div>
+
+					</div>
+					<div class="box-content">
+						<table class="table table-bordered table-striped table-condensed">
+							  <thead>
+								  <tr>
+									  <th>ID</th>
+									  <th>Name</th>
+									  <th>Introduction</th>
+									  <th>Add_time</th>
+									  <th>Update_time</th>
+                                      <th>Action</th>
+								  </tr>
+							  </thead>
+
+                              {% for t in group_info %}
+
+									<td class="center">{{t.id}}</td>
+									<td class="center">{{t.name}}</td>
+                                    <td class="center">{{t.introduction}}</td>
+									<td class="center">{{t.add_time.strftime("%Y-%m-%d")}}</td>
+									<td class="center">{{t.last_modify_time.strftime("%Y-%m-%d")}}</td>
+								    <td class="right">
+									<a class="label label-success" href="{{url_for('newdbtype')}}"  title data-rel="tooltip"   data-original-title="新增分类">
+										<i class="halflings-icon white zoom-in"></i>
+									</a>
+									<a class="label label-warning" href="{{url_for('changedbtype',type_id=t.id)}}"  title data-rel="tooltip"   data-original-title="修改分类">
+										<i class="halflings-icon white edit"></i>
+									</a>
+									<a class="label label-important" href="{{url_for('deldbtype',type_id=t.id)}}"  title data-rel="tooltip"   data-original-title="删除分类（存在所属成员将删除失败）">
+										<i class="halflings-icon white trash"></i>
+									</a>
+								    </td>
+								</tr>
+
+                              {% endfor %}
+
+
+						 </table>
+					</div>
+				</div><!--/span-->
+			</div><!--/row-->
+			<!--    Database Cluster  -->
+			<div class="row-fluid sortable">
+				<div class="box span12">
+					<div class="box-header">
+						<h2><i class="halflings-icon white align-justify"></i><span class="break"></span>集群</h2>
+						<div class="box-icon">
+							<a href="{{url_for('newdbcluster')}}"><i class="halflings-icon white wrench"></i></a>
+							<a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+							<a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+						</div>
+					</div>
+					<div class="box-content">
+						<table class="table table-bordered table-striped table-condensed">
+							  <thead>
+								  <tr>
+									  <th>ID</th>
+									  <th>Name</th>
+									  <th>Introduction</th>
+									  <th>Status</th>
+									  <th>Applicant</th>
+									  <th>JoinTime</th>
+                                      <th>Action</th>
+								  </tr>
+							  </thead>
+
+                              {% for c in cluster_info %}
+
+									<td class="center">{{c.id}}</td>
+									<td class="center">{{c.name}}</td>
+                                    <td class="center">{{c.introduction}}</td>
+									<td class="center">
+                                    {% if c.status == "online"%}
+									<span class="label label-success"  title data-rel="tooltip"   data-original-title="在线">online</span>
+                                    {% else %}
+                                        <span class="label" title data-rel="tooltip"   data-original-title="下线">Down</span>
+                                    {% endif %}
+								</td>
+									<td class="center">{{c.applicant}}</td>
+									<td class="center">{{c.add_time.strftime("%Y-%m-%d")}}</td>
+								    <td class="right">
+									<a class="label label-success" href="{{url_for('newdbcluster')}}"  title data-rel="tooltip"   data-original-title="新增集群">
+										<i class="halflings-icon white zoom-in"></i>
+									</a>
+									<a class="label label-warning" href="{{url_for('changedbcluster',cluster_id=c.id)}}"  title data-rel="tooltip"   data-original-title="修改集群">
+										<i class="halflings-icon white edit"></i>
+									</a>
+									<a class="label label-important" href="{{url_for('deldbcluster',cluster_id=c.id)}}"  title data-rel="tooltip"   data-original-title="删除集群（存在所属成员将删除失败）">
+										<i class="halflings-icon white trash"></i>
+									</a>
+								    </td>
+								</tr>
+
+                              {% endfor %}
+
+
+						 </table>
+					</div>
+				</div><!--/span-->
+			</div><!--/row-->
+
+
+            <div class="row-fluid sortable">
+				<div class="box span12">
+					<div class="box-header" data-original-title>
+						<h2><i class="halflings-icon white user"></i><span class="break"></span>数据库</h2>
+						<div class="box-icon">
+							<a href="{{url_for('newdb')}}"><i class="halflings-icon white wrench"></i></a>
+							<a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+							<a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+						</div>
+					</div>
+					<div class="box-content">
+						<table class="table table table table-striped table datatable table-bordered table  table table table table bootstrap-datatable">
+
+						  <thead>
+							  <tr>
+								  <th>ID</th>
+								  <th>Tags</th>
+                                  <th>DataCenter</th>
+								  <th>CLuster</th>
+                                  <th>Version</th>
+								  <th>IP</th>
+								  <th>Port</th>
+								  <th>M/S</th>
+                                  <th>Master_Host</th>
+                                  <th>Status</th>
+                                  <th>Date_Joined</th>
+                                  <th>Action</th>
+
+							  </tr>
+						  </thead>
+						  <tbody>
+                          {% for d in database_info %}
+							<tr>
+								<td class="center">{{d.id}}</td>
+								<td class="center">{{d.name}}</td>
+                                <td class="center">{{d.datacenter_name}}</td>
+								<td class="center">{{d.cluster_name}}</td>
+                                <td class="center">{{d.version}}</td>
+								<td class="center">{{d.ip}}</td>
+								<td class="center">{{d.port}}</td>
+
+								<td class="center">
+                                    {% if d.is_master == 1 and d.is_slave == 0 %}
+									<span class="label label-success" title data-rel="tooltip"   data-original-title="主库">Master</span>
+                                    {% elif d.is_master == 0 and d.is_slave == 1 %}
+                                    <span class="label label-warning" title data-rel="tooltip"   data-original-title="从库">Slave</span>
+                                    {% elif d.is_master == 1 and d.is_slave == 1 %}
+                                    <span class="label label-important" title data-rel="tooltip"   data-original-title="独立主机">Cascade</span>
+                                    {% else %}
+                                    <span class="label label-important" title data-rel="tooltip"   data-original-title="独立主机">Alone</span>
+                                    {% endif %}
+								</td>
+                                <td class="center">
+									{{ d.master_host }}
+								</td>
+								<td class="center">
+                                    {% if d.status == "active" %}
+									<span class="label label-success" title data-rel="tooltip"   data-original-title="在线">Active</span>
+                                    {% elif d.status == "inactive" %}
+                                        <span class="label" title data-rel="tooltip"   data-original-title="下线">Down</span>
+									{% else %}
+										<span class="label" title data-rel="tooltip"   data-original-title="未知">Unknown</span>
+                                    {% endif %}
+								</td>
+                                <td class="center">{{d.add_time.strftime('%Y-%m-%d')}}</td>
+								<td class="center">
+									<a class="label label-success" href="{{url_for('newdb')}}" title data-rel="tooltip"   data-original-title="添加">
+										<i class="halflings-icon white zoom-in"></i>
+									</a>
+									<a class="label label-warning" href="{{url_for('changedb',db_id=d.id)}}" title data-rel="tooltip"   data-original-title="修改">
+										<i class="halflings-icon white edit"></i>
+									</a>
+									<a class="label label-important" href="{{url_for('deldb',db_id=d.id)}}" title data-rel="tooltip"   data-original-title="删除">
+										<i class="halflings-icon white trash"></i>
+									</a>
+
+								</td>
+
+							</tr>
+
+                          {% endfor %}
+						  </tbody>
+
+					  </table>
+					</div>
+				</div><!--/span-->
+
+			<!--</div><!--/row-->
+
+    		{% endblock %}
+

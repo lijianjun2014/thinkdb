@@ -1,0 +1,100 @@
+			{% extends 'base.html' %}
+			{% block typography %}
+						
+			<ul class="breadcrumb">
+				<li>
+					<i class="icon-home"></i>
+					<a href="index.html">Home</a> 
+					<i class="icon-angle-right"></i>
+				</li>
+				<li><a href="#">{{sub_title}}</a></li>
+			</ul>
+
+			<div class="row-fluid sortable">
+				<div class="box span12">
+					<div class="box-header" data-original-title>
+						<h2><i class="halflings-icon white list"></i><span class="break"></span>{{href_name}}</h2>
+					</div>
+					<div class="box-content">
+						<form class="form-horizontal" method="post">
+							{{objForm.csrf_token}}
+                             {% if objForm.errors %}
+                                    <ul class=flashes>
+                                        {% for message in objForm.errors %}
+                                            <li><font color="red">{{ message }}</font></li>
+                                        {% endfor %}
+                                    </ul>
+                            {% endif %}
+                            {% if get_flashed_messages() %}
+                                    <ul class=flashes>
+                                        {% for message in get_flashed_messages() %}
+                                            <li><font color="red">{{ message }}</font></li>
+                                        {% endfor %}
+                                    </ul>
+                            {% endif %}
+							<fieldset>
+                                <div class="control-group">
+                                   <label class="control-label-self" for="focusedInput">选择数据库:</label>
+								<div class="controls-self">
+                                  <!-- class="control-label"    class="controls" 接收从后台穿过来的FORM对象，自动生成INPUT -->
+                                  {{objForm.db_id}}
+                                </div></div>
+								<div class="control-group">
+                                   <label class="control-label-self" for="focusedInput">工单说明:</label>
+								<div class="controls-self">
+                                  <!-- 接收从后台穿过来的FORM对象，自动生成INPUT -->
+                                  {{objForm.ticket_introduction}}
+                                </div></div>
+								<div class="form-group form-group-lg">
+									<label class="control-label-self" for="focusedInput">SQL语句:</label>
+								<div class="controls-self-sql">
+								  <!--<textarea class="form-control" rows="9" name="sqlarea" placeholder="请输入你的SQL语句，多条语句用;分割"></textarea>-->
+									{{objForm.sqlarea}}
+								</div>
+						<div class="box-content">
+						<table class="table table-bordered table-striped table-condensed table-condensed table-condensed table-condensed">
+							  <thead>
+								  <tr>
+									  <th>ID</th>
+									  <th>阶段</th>
+									  <th>错误等级</th>
+									  <th>阶段状态</th>
+									  <th>错误等级</th>
+									  <th>当前检查的SQL</th>
+                                      <th>预计影响的SQL</th>
+								  </tr>
+							  </thead>
+
+                              {% for c in result %}
+									<td class="center">{{c.ID}}</td>
+									<td class="center">{{c.stage}}</td>
+                                    <td class="center">{{c.errlevel}}</td>
+									<td class="center">{{c.stagestatus}}</td>
+									<td class="right">{{c.errormessage}}</td>
+									<td class="center">{{c.SQL}}</td>
+									<td class="center">{{c.Affected_rows}}</td>
+
+								</tr>
+
+                              {% endfor %}
+
+
+						 </table>
+					</div>
+				  </div>
+							  <div class="form-actions">
+
+								  <button type="submit" class="btn btn-primary-audit" name="check" value="check"><i class="halflings-icon eye-open"></i>检测</button>
+								  <button type="submit" class="btn btn-primary-sumbit" name="submit" value="submit"><i class="halflings-icon ok"></i>提交(<font color = red>请先检测无误后再提交</font>)</button>
+                                {{message |safe}}
+							  </div>
+							</fieldset>
+						  </form>
+
+					</div>
+				</div><!--/span-->
+
+
+			</div><!--/row-->
+    
+			{% endblock %}

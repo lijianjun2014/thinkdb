@@ -1,0 +1,31 @@
+pymysql==0.8.0
+Jinja2==2.10
+MarkupSafe==1.0
+Werkzeug==0.14.1
+click==6.7
+flask==0.12.2
+itsdangerous==0.24
+SQLAlchemy==1.2.5
+flask-sqlalchemy==2.3.2
+datetime==4.2
+wtf==0.1
+wtforms==2.1
+Flask-WTF==0.14.2
+flask-login==0.4.1
+pycryptodome==3.5.1
+asyncio==3.4.3
+gevent==1.2.2
+
+#需要修改的程序的地方
+1、如果按照正确格式书写后还是报错：2576, 'Must start as begin statement;
+    修改pymysql的cursor.py  338行 讲self._show_warnings()这一句注释掉，换成pass
+            if not self._defer_warnings:
+            #changed for Inception by Laary li (20180405)
+            #self._show_warnings()
+            pass
+2、Python 3版本连接 inception:
+    修改pymysql的connections.py里面的_request_authentication() 增加2行如下：
+    if self.server_version.split('.', 1)[0] == "Inception2":
+        self.client_flag |= CLIENT.MULTI_RESULTS
+    elif int(self.server_version.split('.', 1)[0]) >= 5:
+        self.client_flag |= CLIENT.MULTI_RESULTS

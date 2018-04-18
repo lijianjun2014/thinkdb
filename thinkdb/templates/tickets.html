@@ -1,0 +1,224 @@
+			{% extends 'base.html' %}
+			{% block databases %}
+
+			<ul class="breadcrumb">
+				<li>
+					<i class="icon-home"></i>
+					<a href="{{url_for('index')}}">Home</a>
+					<i class="icon-angle-right"></i>
+				</li>
+				<li><a href="{{url_for('tickets')}}">{{sub_title}}</a></li>
+			</ul>
+			{% if href_name == "我的工单列表"%}
+			<!-- slow query list --->
+            <div class="row-fluid sortable">
+				<div class="box span12">
+					<div class="box-header" data-original-title>
+						<h2><i class="halflings-icon white user"></i><span class="break"></span>{{href_name}}</h2>
+						<div class="box-icon">
+							<a href="{{url_for('newdb')}}"><i class="halflings-icon white wrench"></i></a>
+							<a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+							<a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+						</div>
+					</div>
+					<div class="box-content">
+						<table class="table table table-striped table-striped table datatable table-bordered bootstrap-datatable">
+
+						  <thead>
+							  <tr>
+								  <th>工单编号</th>
+								  <th>语句类型</th>
+								  <th>工单简介</th>
+								  <th>提交人</th>
+                                  <th>提交时间</th>
+                                  <th>审核状态</th>
+								  <th>执行状态</th>
+                                  <th>Action</th>
+
+							  </tr>
+						  </thead>
+						  <tbody>
+                          {% for d in tickets_list %}
+							<tr>
+								<td class="center"><a href="{{url_for('ticketview',tickets_id=d.id)}}">{{d.tickets_num}}</a></td>
+								<!--<td class="center">{{d.fingerprint}}</td>-->
+								<td class="center">{{d.type}}</td>
+								<td class="center">{{d.introduction}}</td>
+								<td class="center">{{d.applicant}}</td>
+                                <td class="center">{{d.add_time.strftime('%Y-%m-%d %H:%M')}}</td>
+
+                                <td class="center">
+									{% if d.status == "通过"%}
+									<span class="label label-success" title data-rel="tooltip"   data-original-title="已同意">已同意</span>
+                                    {% elif d.status == "拒绝" %}
+									<span class="label label-important" title data-rel="tooltip"   data-original-title="已拒绝">已拒绝</span>
+									{% elif d.status == "待审核" %}
+										<span class="label label-warning" title data-rel="tooltip"   data-original-title="待审核">待审核</span>
+                                    {% endif %}
+								</td>
+
+								<td class="center">
+									{% if d.status != "拒绝" and d.is_execute == 1%}
+									<span class="label label-success" title data-rel="tooltip"   data-original-title="已同意">已执行</span>
+									{% elif d.status != "拒绝" and d.is_execute == 0%}
+										<span class="label label-warning" title data-rel="tooltip"   data-original-title="待审核">未执行</span>
+									{% elif d.status == "拒绝"%}
+									<span class="label label-important" title data-rel="tooltip"   data-original-title="已拒绝">已拒绝</span>
+                                    {% endif %}
+								</td>
+								<!--<td class="center">{{d.lock_time_sum}}</td>
+                                <td class="center">{{d.lock_time_min}}</td>
+                                <td class="center">{{d.lock_time_max}}</td> -->
+								<td class="center">
+									<a class="label label-success" href="{{url_for('ticketview',tickets_id=d.id)}}" title data-rel="tooltip"   data-original-title="查看">
+										<i class="halflings-icon white zoom-in"></i>
+									</a>
+									<a class="label label-important" href="{{url_for('deltickets',tickets_id=d.id)}}" title data-rel="tooltip"   data-original-title="删除">
+										<i class="halflings-icon white trash"></i>
+									</a>
+								</td>
+
+							</tr>
+
+                          {% endfor %}
+						  </tbody>
+
+					  </table>
+					</div>
+				</div><!--/span-->
+
+			{% else %}
+			<!-- ELSE -->
+			<div class="row-fluid sortable">
+				<div class="box span12">
+					<div class="box-header" data-original-title>
+						<h2><i class="halflings-icon white edit"></i><span class="break"></span>{{href_name}}</h2>
+						<div class="box-icon">
+
+						</div>
+					</div>
+					<div class="box-content">
+
+						<form class="form-horizontal" method="post">
+                             {% if objForm.errors %}
+                                    <ul class=flashes>
+                                        {% for message in objForm.errors %}
+                                            <li><font color="red">{{ message }}</font></li>
+                                        {% endfor %}
+                                    </ul>
+                            {% endif %}
+                            {% if get_flashed_messages() %}
+                                    <ul class=flashes>
+                                        {% for message in get_flashed_messages() %}
+                                            <li><font color="red">{{ message }}</font></li>
+                                        {% endfor %}
+                                    </ul>
+                            {% endif %}
+							<fieldset>
+
+
+                              <div class="control-group">
+                                   <label class="control-label-self" for="focusedInput">工单编号:</label>
+								<div class="controls-self">
+                                  <!-- 接收从后台穿过来的FORM对象，自动生成INPUT -->
+                                    {{objForm.csrf_token}}
+								  {{objForm.tickets_num(class='uneditable-input',disabled='')}}
+								</div></div>
+                                <div class="control-group">
+                                   <label class="control-label-self" for="focusedInput">目标数据库:</label>
+								<div class="controls-self">
+								  {{objForm.db_id(class='uneditable-input',disabled='')}}
+								</div></div>
+                                <div class="control-group">
+                                   <label class="control-label-self" for="focusedInput">审核人:</label>
+								<div class="controls-self">
+                                  {{objForm.auditor(class='uneditable-input',disabled='')}}
+                                </div></div>
+                                <div class="control-group">
+                                   <label class="control-label-self" for="focusedInput">提交时间:</label>
+								<div class="controls-self">
+                               		{{objForm.add_time(class='uneditable-input',disabled='')}}
+                                </div></div>
+                                <div class="control-group">
+                                   <label class="control-label-self" for="focusedInput">审核状态:</label>
+								<div class="controls-self">
+									{{objForm.status(class='uneditable-input',disabled='')}}
+                                </div></div>
+								<div class="control-group">
+                                   <label class="control-label-self" for="focusedInput">是否执行:</label>
+								<div class="controls-self">
+									{{objForm.is_execute(class='uneditable-input',disabled='')}}
+                                </div></div>
+                                <div class="form-group form-group-lg">
+									<label class="control-label-self" for="focusedInput">待审核SQL:</label>
+								<div class="controls-self-sql">
+								  {{objForm.sqlcontent(class='uneditable-input',disabled='')}}
+								</div></div>
+								<div class="form-group form-group-lg">
+									<label class="control-label-self" for="focusedInput">审核意见:</label>
+								<div class="controls-self-sql">
+								  {{objForm.audit_advise}}
+								</div>
+									<div class="box-content">
+										<table class="table table-bordered table-striped table-condensed table-condensed table-condensed table-condensed">
+											  <thead>
+												  <tr>
+													  <th>ID</th>
+													  <th>阶段</th>
+													  <th>错误等级</th>
+													  <th>阶段状态</th>
+													  <th>错误等级</th>
+													  <th>当前检查的SQL</th>
+													  <th>预计影响的SQL</th>
+													  <th>SQLSHA1</th>
+												  </tr>
+											  </thead>
+
+											  {% for c in result %}
+													<td class="center">{{c.ID}}</td>
+													<td class="center">{{c.stage}}</td>
+													<td class="center">{{c.errlevel}}</td>
+													<td class="center">{{c.stagestatus}}</td>
+													<td class="right">{{c.errormessage}}</td>
+													<td class="center">{{c.SQL}}</td>
+													<td class="center">{{c.Affected_rows}}</td>
+													<td class="center">{{c.sqlsha1}}</td>
+
+												</tr>
+
+											  {% endfor %}
+
+
+										 </table>
+									</div>
+								  </div>
+								 {% for c in result %}
+									{% if c.sqlsha1 !="" %}
+								  <div class="control-group">
+                                   <label class="control-label-self" for="focusedInput">审核状态:</label>
+								<div class="controls-self">
+									<input id="{{c.ID}}_sqlsha1"     class="uneditable-input" disabled value="{{c.sqlsha1}}"></input>
+                                </div></div>
+									{% endif %}
+								{% endfor %}
+								<div class="form-actions">
+									{% if objForm.is_execute.data == 0 %}
+									<button type="submit" class="btn btn-primary-audit" name="check" value="check"><i class="halflings-icon eye-open"></i>检测</button>
+									<button type="submit" class="btn btn-primary-pass" name="pass" value="pass"><i class="halflings-icon ok"></i>通过</button>
+									<button type="submit" class="btn btn-primary-reject" name="reject" value="reject"><i class="halflings-icon ban-circle"></i>拒绝</button>
+									{% endif %}
+									{% if objForm.status.data == "通过" and objForm.is_execute.data == 0 %}
+									<button type="submit" class="btn btn-primary-execute" name="execute" value="execute"><i class="halflings-icon play"></i>执行(<font color = red>通过会提交数据库并执行,请先检测无误后再提交</font>)</button>
+									{% endif %}
+									{{message |safe}}
+								</div>
+							</fieldset>
+						  </form>
+
+					</div>
+				</div><!--/span-->
+
+			</div>
+			{% endif %}
+    		{% endblock %}
+

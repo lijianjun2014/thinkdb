@@ -1,0 +1,134 @@
+			{% extends 'base.html' %}
+			{% block users %}
+
+			<ul class="breadcrumb">
+				<li>
+					<i class="icon-home"></i>
+					<a href="{{url_for('index')}}">Home</a>
+					<i class="icon-angle-right"></i>
+				</li>
+				<li><a href="#">用户管理</a></li>
+			</ul>
+
+			<div class="row-fluid sortable">
+				<div class="box span12">
+					<div class="box-header">
+						<h2><i class="halflings-icon white align-justify"></i><span class="break"></span>用户组</h2>
+						<div class="box-icon">
+                            <a href="{{url_for('newusergroup')}}"><i class="halflings-icon white wrench"></i></a>
+							<a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+						</div>
+					</div>
+					<div class="box-content">
+						<table class="table table-bordered table-striped table-condensed">
+							  <thead>
+								  <tr>
+									  <th>ID</th>
+									  <th>Name</th>
+									  <th>Add_time</th>
+									  <th>Introduction</th>
+                                      <th>Action</th>
+								  </tr>
+							  </thead>
+							  <tbody>
+                              {% for i in group_info %}
+								<tr>
+									<td class="center">{{i.id}}</td>
+									<td class="center">{{i.group_name}}</td>
+									<td class="center">{{i.add_time.strftime("%Y-%m-%d")}}</td>
+									<td class="center">{{i.introduction}}</td>
+								    <td class="right">
+									<a class="label label-success" href="{{url_for('newusergroup')}}"  title data-rel="tooltip"   data-original-title="新增用户组">
+										<i class="halflings-icon white zoom-in"></i>
+									</a>
+									<a class="label label-warning" href="{{url_for('changeusergroup',group_id=i.id)}}"  title data-rel="tooltip"   data-original-title="修改用户组">
+										<i class="halflings-icon white edit"></i>
+									</a>
+									<a class="label label-important" href="{{url_for('delusergroup',group_id=i.id)}}"  title data-rel="tooltip"   data-original-title="删除用户组（删除后下属用户无组归属）">
+										<i class="halflings-icon white trash"></i>
+									</a>
+								    </td>
+								</tr>
+
+                              {% endfor %}
+
+							  </tbody>
+						 </table>
+					</div>
+				</div><!--/span-->
+			</div><!--/row-->
+
+            <div class="row-fluid sortable">
+				<div class="box span12">
+					<div class="box-header" data-original-title>
+						<h2><i class="halflings-icon white user"></i><span class="break"></span>用户</h2>
+						<div class="box-icon">
+							<a href="{{url_for('newuser')}}"><i class="halflings-icon white wrench"></i></a>
+							<a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+						</div>
+					</div>
+					<div class="box-content">
+						<table class="table table table-striped table table-bordered table datatable bootstrap-datatable">
+
+						  <thead>
+							  <tr>
+								  <th>UserID</th>
+								  <th>UserName</th>
+								  <th>RealName</th>
+								  <th>Email</th>
+								  <th>UserGroup</th>
+								  <th>Date_Joined</th>
+                                  <th>Status</th>
+                                  <th>Action</th>
+
+							  </tr>
+						  </thead>
+						  <tbody>
+                          {% for u in user_info %}
+							<tr>
+								<td class="center">{{u.id}}</td>
+								<td class="center">{{u.username}}</td>
+								<td class="center">{{u.real_name}}</td>
+								<td class="center">{{u.email}}</td>
+								<td class="center">{{u.group.group_name}}</td>
+								<td class="center">{{u.add_time.strftime("%Y-%m-%d")}}</td>
+								<td class="center">
+                                    {% if u.status == "正常"%}
+									<span class="label label-success" title data-rel="tooltip"   data-original-title="正常">Active</span>
+                                    {% else %}
+                                        {% if u.status == "锁定" %}
+                                        <span class="label label-warning" title data-rel="tooltip"   data-original-title="锁定">Hold</span>
+                                        {% else %}
+                                        <span class="label label-important" title data-rel="tooltip"   data-original-title="过期">Expired</span>
+                                        {% endif %}
+                                    {% endif %}
+								</td>
+								<td class="center">
+									<a class="label label-success" href="{{url_for('newuser')}}" title data-rel="tooltip"   data-original-title="添加用户">
+										<i class="halflings-icon white zoom-in"></i>
+									</a>
+									<a class="label label-warning" href="{{url_for('changeuser',user_id=u.id)}}" title data-rel="tooltip"   data-original-title="修改">
+										<i class="halflings-icon white edit"></i>
+									</a>
+									<a class="label label-important" href="{{url_for('deluser',user_id=u.id)}}" title data-rel="tooltip"   data-original-title="删除">
+										<i class="halflings-icon white trash"></i>
+									</a>
+
+								</td>
+
+							</tr>
+
+                          {% endfor %}
+						  </tbody>
+
+					  </table>
+					</div>
+				</div><!--/span-->
+
+			</div><!--/row-->
+
+
+
+
+    		{% endblock %}
+

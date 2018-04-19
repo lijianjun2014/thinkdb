@@ -120,7 +120,6 @@ def usercenter():
     if username:
         group_info = User_Group.query.all()
         user_info = User.query.all()
-        print(user_info)
         return render_template('users.html',username=username,myuserid=current_user.id,group_info=group_info, user_info= user_info,messages=get_message(current_user.username))
     else:
         return redirect(url_for('login'))
@@ -266,7 +265,7 @@ def dbcenter():
         return redirect(url_for('login'))
 
 
-#新增数据库分组
+#新增数据中心
 @app.route('/newdbtype/',methods=['GET','POST'])
 @login_required
 def newdbtype():
@@ -303,7 +302,7 @@ def deldbtype(type_id):
 def changedbtype(type_id):
     username = current_user.username
     sub_title = "数据库管理"
-    href_name = "修改数据库分类"
+    href_name = "修改数据中心"
     newform = DataCenterForm()
     if request.method == "GET":
         olddata = Data_Center.query.filter_by(id=type_id).first()
@@ -497,7 +496,6 @@ def slowquery():
         connection = pymysql.connect(**config)
         cursor = connection.cursor()
         # 执行sql语句，进行查询
-        print(start_time,end_time)
         sql = 'select B.serverid_max,format(sum(B.Query_time_median)/count(*),2) as "avg",sum(ts_cnt) as "times",A.checksum, A.last_seen,B.db_max, B.user_max,format(min(B.query_time_min),2) as query_time_min,format(max(B.query_time_max),2) as "query_time_max",A.fingerprint,if(locate("|",B.sample),SUBSTRING_INDEX(SUBSTRING_INDEX(B.sample,"|*",-1),"*|",1),"")  as "sample"  FROM mysql_slow_query_review A JOIN  mysql_slow_query_review_history B ON A.checksum = B.checksum WHERE  1 AND A.last_seen BETWEEN %s AND %s GROUP BY A.checksum'
         cursor.execute(sql,(start_time, end_time))
         # 获取查询结果
@@ -599,7 +597,6 @@ def ticketview(tickets_id):
                 cur = connection.cursor()
                 cur.execute(sql)
                 result = cur.fetchall()
-                print(result)
                 num_fields = len(cur.description)
                 field_names = [i[0] for i in cur.description]
                 # 打印出来Inception对MySQL语句的审计结果

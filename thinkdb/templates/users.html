@@ -25,8 +25,8 @@
 								  <tr>
 									  <th>ID</th>
 									  <th>Name</th>
-									  <th>Add_time</th>
 									  <th>Introduction</th>
+                                      <th>Add_time</th>
                                       <th>Action</th>
 								  </tr>
 							  </thead>
@@ -35,8 +35,8 @@
 								<tr>
 									<td class="center">{{i.id}}</td>
 									<td class="center">{{i.group_name}}</td>
-									<td class="center">{{i.add_time.strftime("%Y-%m-%d")}}</td>
 									<td class="center">{{i.introduction}}</td>
+                                    <td class="center">{{i.add_time.strftime("%Y-%m-%d")}}</td>
 								    <td class="right">
 									<a class="label label-success" href="{{url_for('newusergroup')}}"  title data-rel="tooltip"   data-original-title="新增用户组">
 										<i class="halflings-icon white zoom-in"></i>

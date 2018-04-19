@@ -8,7 +8,7 @@ Thinkdb是一款由PYTHON开发的MySQL DBA维护和监控MySQL数据库的软�
 
 |Author|lijianjun|
 |---|---
-|QQ群|　　　7273702
+|QQ群|　　7273702|
 |E-mail|33359848@qq.com
 
 

@@ -5,8 +5,7 @@ from flask_login import login_user,logout_user,login_required,LoginManager,curre
 from thinkdb import app,login_manager,db
 from thinkdb.models import *
 from thinkdb.forms import *
-import datetime,random,time,asyncio
-import json
+import datetime,random,time,asyncio,hashlib
 # 数据库连接信息
 config = {
     'host': '127.0.0.1',
@@ -80,7 +79,6 @@ def delmessage(messages_id):
     else:
         return redirect(url_for('messages_center'))
 
-
 #User Login Auth
 @app.route('/')
 def index():
@@ -98,7 +96,7 @@ def login():
         if user is None:
             flash("用户不存在.")
             return render_template('login.html', form=loginform)
-        elif user is not None and user.password == loginform.password.data:
+        elif user is not None and check_password_hash(user.password,loginform.password.data):
             if user.status != "正常":
                 flash("用户已过期或被锁定，请联系管理员")
                 return render_template('login.html', form=loginform)
@@ -133,7 +131,7 @@ def newuser():
     newuserform = ChangeUserForm()
     newuserform.group_id.choices = [(v.id, v.group_name) for v in User_Group.query.all()]
     if newuserform.validate_on_submit():
-        newuserdata = User(username=newuserform.username.data,password=newuserform.password.data,group_id=newuserform.group_id.data,real_name=newuserform.real_name.data,email=newuserform.email.data,status=newuserform.status.data)
+        newuserdata = User(username=newuserform.username.data,password=generate_password_hash(newuserform.password.data,method='md5'),group_id=newuserform.group_id.data,real_name=newuserform.real_name.data,email=newuserform.email.data,status=newuserform.status.data)
         if(User.query.filter_by(username=newuserform.username.data).first()):
             flash(u'用户名已存在')
             return render_template('user_info.html', username=username,myuserid=current_user.id, objForm=newuserform,href_name=href_name,sub_title=sub_title,messages=get_message(current_user.username))
@@ -174,14 +172,14 @@ def changeuser(user_id):
         olddata = User.query.filter_by(id=user_id).first()
         changeuserform.username.data = olddata.username
         changeuserform.real_name.data = olddata.real_name
-        changeuserform.password.data = olddata.password
+        #changeuserform.password.data = olddata.password
         changeuserform.email.data = olddata.email
         changeuserform.status.data = olddata.status
         changeuserform.group_id.data = olddata.group_id
         return render_template('user_info.html', objForm=changeuserform, username=username,myuserid=current_user.id,href_name=href_name,sub_title=sub_title,messages=get_message(current_user.username))
     elif changeuserform.validate_on_submit():
         changeduser = User.query.filter_by(id=user_id).first()
-        changeduser.password = changeuserform.password.data
+        changeduser.password = generate_password_hash(changeuserform.password.data,method='md5')
         changeduser.email = changeuserform.email.data
         changeduser.real_name = changeuserform.real_name.data
         changeduser.status = changeuserform.status.data

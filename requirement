@@ -15,6 +15,7 @@ flask-login==0.4.1
 pycryptodome==3.5.1
 asyncio==3.4.3
 gevent==1.2.2
+fabric3
 
 #需要修改的程序的地方
 1、如果按照正确格式书写后还是报错：2576, 'Must start as begin statement;

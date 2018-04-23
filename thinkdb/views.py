@@ -494,17 +494,17 @@ def slowquery():
         connection = pymysql.connect(**config)
         cursor = connection.cursor()
         # 执行sql语句，进行查询
-        sql = 'select B.serverid_max,format(sum(B.Query_time_median)/count(*),2) as "avg",sum(ts_cnt) as "times",A.checksum, A.last_seen,B.db_max, B.user_max,format(min(B.query_time_min),2) as query_time_min,format(max(B.query_time_max),2) as "query_time_max",A.fingerprint,if(locate("|",B.sample),SUBSTRING_INDEX(SUBSTRING_INDEX(B.sample,"|*",-1),"*|",1),"")  as "sample"  FROM mysql_slow_query_review A JOIN  mysql_slow_query_review_history B ON A.checksum = B.checksum WHERE  1 AND A.last_seen BETWEEN %s AND %s GROUP BY A.checksum'
+        sql = 'select B.serverid_max,format(sum(B.Query_time_median)/count(*),2) as "avg",sum(ts_cnt) as "times",A.checksum, A.last_seen,B.db_max, B.user_max,format(min(B.query_time_min),2) as query_time_min,format(max(B.query_time_max),2) as "query_time_max",A.fingerprint,if(locate("|",B.sample),SUBSTRING_INDEX(SUBSTRING_INDEX(B.sample,"|*",-1),"*|",1),"")  as "sample"  FROM mysql_slow_query_review A JOIN  mysql_slow_query_review_history B ON A.checksum = B.checksum WHERE  1 AND B.last_modify_time BETWEEN %s AND %s GROUP BY A.checksum'
         cursor.execute(sql,(start_time, end_time))
         # 获取查询结果
         slowquery = cursor.fetchall()
         # 最慢的10条语句，进行查询
-        top10slowest_sql = 'select B.serverid_max, format(sum(B.Query_time_median)/count(*),2) as "avg",sum(ts_cnt) as "times",A.checksum, A.last_seen,B.db_max, B.user_max,format(min(B.query_time_min),2) as query_time_min,format(max(B.query_time_max),2) as "query_time_max",A.fingerprint,SUBSTRING_INDEX(SUBSTRING_INDEX(B.sample,"|*",-1),"*|",1) as "sample"  FROM mysql_slow_query_review A JOIN  mysql_slow_query_review_history B ON A.checksum = B.checksum WHERE  1 AND A.last_seen BETWEEN %s AND %s GROUP BY A.checksum  ORDER BY sum(B.Query_time_median)/count(*) desc limit 10'
+        top10slowest_sql = 'select B.serverid_max, format(sum(B.Query_time_median)/count(*),2) as "avg",sum(ts_cnt) as "times",A.checksum, A.last_seen,B.db_max, B.user_max,format(min(B.query_time_min),2) as query_time_min,format(max(B.query_time_max),2) as "query_time_max",A.fingerprint,SUBSTRING_INDEX(SUBSTRING_INDEX(B.sample,"|*",-1),"*|",1) as "sample"  FROM mysql_slow_query_review A JOIN  mysql_slow_query_review_history B ON A.checksum = B.checksum WHERE  1 AND B.last_modify_time BETWEEN %s AND %s GROUP BY A.checksum  ORDER BY sum(B.Query_time_median)/count(*) desc limit 10'
         cursor.execute(top10slowest_sql, (start_time, end_time))
         # 获取最慢10条查询结果
         top10slowest = cursor.fetchall()
         # 最频繁的10条语句，进行查询
-        top10frequent_sql = 'select B.serverid_max, format(sum(B.Query_time_median)/count(*),2) as "avg",sum(ts_cnt) as "times",A.checksum, A.last_seen,B.db_max, B.user_max,format(min(B.query_time_min),2) as query_time_min,format(max(B.query_time_max),2) as "query_time_max",A.fingerprint,if(locate("|",B.sample),SUBSTRING_INDEX(SUBSTRING_INDEX(B.sample,"|*",-1),"*|",1),"")  as "sample"  FROM mysql_slow_query_review A JOIN  mysql_slow_query_review_history B ON A.checksum = B.checksum WHERE  1 AND A.last_seen BETWEEN %s AND %s GROUP BY A.checksum  ORDER BY times desc limit 10'
+        top10frequent_sql = 'select B.serverid_max, format(sum(B.Query_time_median)/count(*),2) as "avg",sum(ts_cnt) as "times",A.checksum, A.last_seen,B.db_max, B.user_max,format(min(B.query_time_min),2) as query_time_min,format(max(B.query_time_max),2) as "query_time_max",A.fingerprint,if(locate("|",B.sample),SUBSTRING_INDEX(SUBSTRING_INDEX(B.sample,"|*",-1),"*|",1),"")  as "sample"  FROM mysql_slow_query_review A JOIN  mysql_slow_query_review_history B ON A.checksum = B.checksum WHERE  1 AND B.last_modify_time BETWEEN %s AND %s GROUP BY A.checksum  ORDER BY times desc limit 10'
         cursor.execute(top10frequent_sql, (start_time, end_time))
         # 获取最慢10条查询结果
         top10frequent = cursor.fetchall()
@@ -827,6 +827,16 @@ def dml():
             db.session.commit()
             return redirect('/tickets/')
     return render_template('dml.html', username=username,myuserid=current_user.id, objForm=objForm, href_name=href_name, sub_title=sub_title,messages=get_message(current_user.username))
+
+#############################Fabric功能区域########################################
+
+
+
+
+
+
+
+
 
 
 

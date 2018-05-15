@@ -1,0 +1,391 @@
+			{% extends 'base.html' %}
+			{% block chart %}
+
+
+			<ul class="breadcrumb">
+				<li>
+					<i class="icon-home"></i>
+					<a href="{{url_for('index')}}">Home</a>
+					<i class="icon-angle-right"></i>
+				</li>
+
+				<li>
+                    {{sub_title}}
+                    <i class="icon-angle-right"></i>
+                </li>
+
+                <li><a href="javascript:window.close();">关闭本页面</a></li>
+
+			</ul>
+
+            <div class="row-fluid sortable">
+				<div class="box span4">
+					<div class="box-header">
+						<h2><i class="halflings-icon white list-alt"></i><span class="break"></span>连接池</h2>
+					</div>
+					<div class="box-content">
+							<div id="connection_pool" style="height:300px"></div>
+					</div>
+				</div>
+
+				<div class="box span4">
+					<div class="box-header" data-original-title>
+						<h2><i class="halflings-icon white list-alt"></i><span class="break"></span>表缓存</h2>
+						<div class="box-icon">
+							<a href="#" class="btn-setting"><i class="halflings-icon white wrench"></i></a>
+							<a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+							<a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+						</div>
+					</div>
+					<div class="box-content">
+						 <div id="table_cache" style="height: 300px;"></div>
+					</div>
+				</div>
+
+                <div class="box span4">
+					<div class="box-header" data-original-title>
+						<h2><i class="halflings-icon white list-alt"></i><span class="break"></span>可用文件数</h2>
+						<div class="box-icon">
+							<a href="#" class="btn-setting"><i class="halflings-icon white wrench"></i></a>
+							<a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+							<a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+						</div>
+					</div>
+					<div class="box-content">
+						 <div id="file_limit" style="height: 300px;"></div>
+					</div>
+				</div>
+
+			</div>
+
+
+
+
+			<div class="row-fluid">
+
+				<div class="box">
+					<div class="box-header">
+						<h2><i class="halflings-icon white list-alt"></i><span class="break"></span>Chart with points</h2>
+						<div class="box-icon">
+							<a href="#" class="btn-setting"><i class="halflings-icon white wrench"></i></a>
+							<a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+							<a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+						</div>
+					</div>
+					<div class="box-content">
+						<div id="sincos"  class="center" style="height:300px;" ></div>
+						<p id="hoverdata">Mouse position at (<span id="x">0</span>, <span id="y">0</span>). <span id="clickdata"></span></p>
+					</div>
+				</div>
+
+				<div class="box">
+					<div class="box-header">
+						<h2><i class="halflings-icon white list-alt"></i><span class="break"></span>Flot</h2>
+						<div class="box-icon">
+							<a href="#" class="btn-setting"><i class="halflings-icon white wrench"></i></a>
+							<a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+							<a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+						</div>
+					</div>
+					<div class="box-content">
+						<div id="flotchart" class="center" style="height:300px"></div>
+					</div>
+				</div>
+
+				<div class="box">
+					<div class="box-header">
+						<h2><i class="halflings-icon white list-alt"></i><span class="break"></span>Stack Example</h2>
+						<div class="box-icon">
+							<a href="#" class="btn-setting"><i class="halflings-icon white wrench"></i></a>
+							<a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+							<a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+						</div>
+					</div>
+					<div class="box-content">
+						 <div id="stackchart" class="center" style="height:300px;"></div>
+
+						<p class="stackControls center">
+							<input class="btn" type="button" value="With stacking">
+							<input class="btn" type="button" value="Without stacking">
+						</p>
+
+						<p class="graphControls center">
+							<input class="btn-primary" type="button" value="Bars">
+							<input class="btn-primary" type="button" value="Lines">
+							<input class="btn-primary" type="button" value="Lines with steps">
+						</p>
+					</div>
+				</div>
+
+			</div>
+
+			<div class="row-fluid sortable">
+				<div class="box span6">
+					<div class="box-header">
+						<h2><i class="halflings-icon white list-alt"></i><span class="break"></span>Pie</h2>
+						<div class="box-icon">
+							<a href="#" class="btn-setting"><i class="halflings-icon white wrench"></i></a>
+							<a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+							<a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+						</div>
+					</div>
+					<div class="box-content">
+							<div id="piechart" style="height:300px"></div>
+					</div>
+				</div>
+
+				<div class="box span6">
+					<div class="box-header" data-original-title>
+						<h2><i class="halflings-icon white list-alt"></i><span class="break"></span>Donut</h2>
+						<div class="box-icon">
+							<a href="#" class="btn-setting"><i class="halflings-icon white wrench"></i></a>
+							<a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+							<a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+						</div>
+					</div>
+					<div class="box-content">
+						 <div id="donutchart" style="height: 300px;"></div>
+					</div>
+				</div>
+
+			</div>
+
+			<hr>
+
+			<div class="row-fluid sortable">
+				<div class="box span12">
+					<div class="box-header">
+						<h2><i class="halflings-icon white list-alt"></i><span class="break"></span>Realtime</h2>
+						<div class="box-icon">
+							<a href="#" class="btn-setting"><i class="halflings-icon white wrench"></i></a>
+							<a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+							<a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+						</div>
+					</div>
+					<div class="box-content">
+						 <div id="realtimechart" style="height:190px;"></div>
+						 <p>You can update a chart periodically to get a real-time effect by using a timer to insert the new data in the plot and redraw it.</p>
+						 <p>Time between updates: <input id="updateInterval" type="text" value="" style="text-align: right; width:5em"> milliseconds</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="row-fluid">
+
+				<div class="widget span6" onTablet="span6" onDesktop="span6">
+					<h2><span class="glyphicons facebook"><i></i></span>Facebook Fans</h2>
+					<hr>
+					<div class="content">
+						<div id="facebookChart" style="height:300px" ></div>
+					</div>
+				</div>
+
+				<div class="widget span6" onTablet="span6" onDesktop="span6">
+					<h2><span class="glyphicons twitter"><i></i></span>Twitter Followers</h2>
+					<hr>
+					<div class="content">
+						<div id="twitterChart" style="height:300px" ></div>
+					</div>
+				</div>
+
+			</div>
+            <div id="main" style="height:400px"></div>
+            <!-- Import BaiDu Echarts JS start-->
+            <!-- ECharts单文件引入 -->
+            <script src="http://echarts.baidu.com/build/dist/echarts-all.js"></script>
+            <script type="text/javascript">
+                // 基于准备好的dom，初始化echarts图表
+                var myChart = echarts.init(document.getElementById('main'));
+                var myChart_Conection = echarts.init(document.getElementById('connection_pool'));
+                var myChart_TableCache = echarts.init(document.getElementById('table_cache'));
+                var myChart_FileLimit = echarts.init(document.getElementById('file_limit'));
+                var option = {
+                    tooltip: {
+                        show: true
+                    },
+                    legend: {
+                        data:['销量']
+                    },
+                    xAxis : [
+                        {
+                            type : 'category',
+                            data : ["衬衫","羊毛衫","雪纺衫","裤子","高跟鞋","袜子"]
+                        }
+                    ],
+                    yAxis : [
+                        {
+                            type : 'value'
+                        }
+                    ],
+                    series : [
+                        {
+                            "name":"销量",
+                            "type":"bar",
+                            "data":[5, 20, 40, 10, 10, 2]
+                        }
+                    ]
+                };
+                //连接池数据
+                var connection_pool_option = {
+                    title : {
+                        //text: '连接池',
+                        //subtext: '纯属虚构',
+                        x:'center'
+                    },
+                    tooltip : {
+                        trigger: 'item',
+                        formatter: "{a} <br/>{b} : {c} ({d}%)"
+                    },
+                    legend: {
+                        orient : 'vertical',
+                        x : 'left',
+                        data:['已用连接','可用连接']
+                    },
+                    toolbox: {
+                        show : true,
+                        feature : {
+                            mark : {show: true},
+                            dataView : {show: true, readOnly: false},
+                            magicType : {
+                                show: true,
+                                type: ['pie', 'funnel'],
+                                option: {
+                                    funnel: {
+                                        x: '25%',
+                                        width: '50%',
+                                        funnelAlign: 'left',
+                                        max: 1548
+                                    }
+                                }
+                            },
+                            restore : {show: true},
+                            saveAsImage : {show: true}
+                        }
+                    },
+                    calculable : true,
+                    series : [
+                        {
+                            //name:'访问来源',
+                            type:'pie',
+                            radius : '50%',
+                            center: ['50%', '55%'],
+                            data:[
+                                {value:335, name:'已用连接'},
+                                {value:310, name:'可用连接'}
+                            ]
+                        }
+                    ]
+                };
+                //表缓存数据
+                var table_cache_option = {
+                    title : {
+                        //text: '连接池',
+                        //subtext: '纯属虚构',
+                        x:'center'
+                    },
+                    tooltip : {
+                        trigger: 'item',
+                        formatter: "{a} <br/>{b} : {c} ({d}%)"
+                    },
+                    legend: {
+                        orient : 'vertical',
+                        x : 'left',
+                        data:['打开数量','可用缓存']
+                    },
+                    toolbox: {
+                        show : true,
+                        feature : {
+                            mark : {show: true},
+                            dataView : {show: true, readOnly: false},
+                            magicType : {
+                                show: true,
+                                type: ['pie', 'funnel'],
+                                option: {
+                                    funnel: {
+                                        x: '25%',
+                                        width: '50%',
+                                        funnelAlign: 'left',
+                                        max: 1548
+                                    }
+                                }
+                            },
+                            restore : {show: true},
+                            saveAsImage : {show: true}
+                        }
+                    },
+                    calculable : true,
+                    series : [
+                        {
+                            //name:'访问来源',
+                            type:'pie',
+                            radius : '50%',
+                            center: ['50%', '55%'],
+                            data:[
+                                {value:2305, name:'打开数量'},
+                                {value:3100, name:'可用缓存'}
+                            ]
+                        }
+                    ]
+                };
+                //文件句柄数据
+                var file_limit_option = {
+                    title : {
+                        //text: '连接池',
+                        //subtext: '纯属虚构',
+                        x:'center'
+                    },
+                    tooltip : {
+                        trigger: 'item',
+                        formatter: "{a} <br/>{b} : {c} ({d}%)"
+                    },
+                    legend: {
+                        orient : 'vertical',
+                        x : 'left',
+                        data:['打开文件数量','可用文件句柄']
+                    },
+                    toolbox: {
+                        show : true,
+                        feature : {
+                            mark : {show: true},
+                            dataView : {show: true, readOnly: false},
+                            magicType : {
+                                show: true,
+                                type: ['pie', 'funnel'],
+                                option: {
+                                    funnel: {
+                                        x: '25%',
+                                        width: '50%',
+                                        funnelAlign: 'left',
+                                        max: 1548
+                                    }
+                                }
+                            },
+                            restore : {show: true},
+                            saveAsImage : {show: true}
+                        }
+                    },
+                    calculable : true,
+                    series : [
+                        {
+                            //name:'访问来源',
+                            type:'pie',
+                            radius : '50%',
+                            center: ['50%', '55%'],
+                            data:[
+                                {value:2305, name:'打开文件数量'},
+                                {value:31000, name:'可用文件句柄'}
+                            ]
+                        }
+                    ]
+                };
+                // 为echarts对象加载数据
+                myChart.setOption(option);
+                myChart_Conection.setOption(connection_pool_option);
+                myChart_TableCache.setOption(table_cache_option);
+                myChart_FileLimit.setOption(file_limit_option);
+            </script>
+
+            <!-- Baidu Echarts end -->
+
+
+			{% endblock %}

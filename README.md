@@ -45,4 +45,33 @@ Thinkdb是一款由PYTHON开发的MySQL DBA维护和监控MySQL数据库的软�
 ![login](https://github.com/lijianjun2014/thinkdb/blob/master/img/login.png "登录")
 ## 用户中心
   用户中心包含了用户组和具体的用户，用户组方便权限管理，后期会增加权限管理！
-![login](https://github.com/lijianjun2014/thinkdb/blob/master/img/usercenter.png "用户中心")
+  用户列表支持搜索，搜索由bootstrapJS自带的。
+  列表的Action支持用户快捷的 增加 修改 删除操作
+![UserCenter](https://github.com/lijianjun2014/thinkdb/blob/master/img/usercenter.png "用户中心")
+  新增用户
+![AddUser](https://github.com/lijianjun2014/thinkdb/blob/master/img/add_user.png "新增用户")
+## 数据库中心
+  数据中心包含了数据中心，集群中心，具体的数据库服务器3个维度，能满足大多数的功能需求。
+![](https://github.com/lijianjun2014/thinkdb/blob/master/img/dbcenter.png "数据中心")
+  更改集群信息，后期陆续会加上集群的自动上下线功能
+![](https://github.com/lijianjun2014/thinkdb/blob/master/img/change_cluster.png "数据中心")
+## 监控中心
+  健康监控
+![](https://github.com/lijianjun2014/thinkdb/blob/master/img/health_monitor.png "健康监控")
+  复制监控
+![](https://github.com/lijianjun2014/thinkdb/blob/master/img/replication_monitor.png "复制监控")
+  监控图表
+![](https://github.com/lijianjun2014/thinkdb/blob/master/img/echarts1.png "监控图表") 
+![](https://github.com/lijianjun2014/thinkdb/blob/master/img/echarts2.png "监控图表") 
+![](https://github.com/lijianjun2014/thinkdb/blob/master/img/echarts3.png "监控图表") 
+![](https://github.com/lijianjun2014/thinkdb/blob/master/img/echarts4.png "监控图表") 
+  慢查询信息
+  慢查询是由pt工具生成，这列只做展示用
+![](https://github.com/lijianjun2014/thinkdb/blob/master/img/slow_query.png "慢查询")
+## 工单模块
+  工单模块支持DML，DDL的提交，由DBA审核，后期会加入由直系上级先审核，最后由DBA审核并执行，底层功能是由inception实现
+![](https://github.com/lijianjun2014/thinkdb/blob/master/img/tickets.png "工单")
+  工单提交，语法错误高亮显示
+![](https://github.com/lijianjun2014/thinkdb/blob/master/img/tickets_submit.png "工单")
+  工单审核与执行，检测通过了才会出现执行按钮
+![](https://github.com/lijianjun2014/thinkdb/blob/master/img/tickets_modify.png "工单")

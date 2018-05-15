@@ -2,10 +2,17 @@ from sqlalchemy.sql import or_,and_
 from flask import render_template,request,url_for,redirect,session,flash,jsonify
 from werkzeug.security import check_password_hash,generate_password_hash
 from flask_login import login_user,logout_user,login_required,LoginManager,current_user
-from thinkdb import app,login_manager,db
+from thinkdb import app,login_manager,db,socketio,emit
 from thinkdb.models import *
 from thinkdb.forms import *
-import datetime,random,time,asyncio,hashlib
+import datetime,random,time,asyncio,hashlib,os,psutil,json
+from threading import Lock
+####以下是为了服务端命令结果
+
+import paramiko
+###fabric###
+
+###end##############
 # 数据库连接信息
 config = {
     'host': '127.0.0.1',
@@ -36,6 +43,17 @@ config = {
     'charset': 'utf8mb4',
     'cursorclass': pymysql.cursors.DictCursor,
     }
+# Ajax测试
+config_ajax = {
+    'host': '127.0.0.1',
+    'port': 3306,
+    'user': 'thinkdb',
+    'password': '123456',
+    'db': 'fthinkdb',
+    'charset': 'utf8mb4',
+    'cursorclass': pymysql.cursors.DictCursor,
+    }
+
 ##########################全局消息模块#################################
 #全局消息
 @login_required
@@ -255,8 +273,11 @@ def dbcenter():
     href_name = "数据库管理中心"
     if username:
         db_type = Data_Center.query.all()
-        databases_info = db.session.query(MySQL_Databases.id,MySQL_Databases.name,Data_Center.name.label('datacenter_name'),Db_Cluster.name.label('cluster_name'),MySQL_Databases.ip,MySQL_Databases.port,MySQL_Databases.version,MySQL_Databases.is_master,MySQL_Databases.is_slave,MySQL_Databases.status,MySQL_Databases.add_time,MySQL_Replication.master_host).outerjoin(MySQL_Replication,MySQL_Databases.name==MySQL_Replication.db_name)\
-            .outerjoin(Data_Center).outerjoin(Db_Cluster).all()
+        databases_info = db.session.query(MySQL_Databases.id,MySQL_Databases.status,MySQL_Databases.name,
+                                          MySQL_Status.data_center_name,MySQL_Status.db_cluster_name,
+                                          MySQL_Databases.ip,MySQL_Databases.port, MySQL_Status.version, MySQL_Status.is_master,
+                                          MySQL_Status.is_slave, MySQL_Databases.add_time,
+                                          MySQL_Replication.master_host).outerjoin(MySQL_Replication,MySQL_Databases.name == MySQL_Replication.db_name).outerjoin(MySQL_Status,MySQL_Status.db_name==MySQL_Databases.name).all()
         cluster_info = Db_Cluster.query.all()
         return render_template('databases.html',username=username,myuserid=current_user.id,group_info=db_type,cluster_info=cluster_info,database_info=databases_info,href_name=href_name,sub_title=sub_title,messages=get_message(current_user.username))
     else:
@@ -367,7 +388,7 @@ def changedbcluster(cluster_id):
         newform.applicant.data = olddata.applicant
         newform.status.data = olddata.status
         newform.introduction.data = olddata.introduction
-        return render_template('db_type.html', objForm=newform, username=username,myuserid=current_user.id,href_name=href_name,sub_title=sub_title)
+        return render_template('db_type.html', objForm=newform, username=username,myuserid=current_user.id,href_name=href_name,sub_title=sub_title,messages=get_message(current_user.username))
     elif newform.validate_on_submit():
         newdata = Db_Cluster.query.filter_by(id=cluster_id).first()
         newdata.name = newform.name.data
@@ -377,7 +398,7 @@ def changedbcluster(cluster_id):
         db.session.commit()
         return redirect(url_for('dbcenter'))
     else:
-        return render_template('db_type.html', objForm=newform, username=username,myuserid=current_user.id,href_name=href_name,sub_title=sub_title)
+        return render_template('db_type.html', objForm=newform, username=username,myuserid=current_user.id,href_name=href_name,sub_title=sub_title,messages=get_message(current_user.username))
 ###################数据库信息###############################
 #新增数据库
 @app.route('/newdb/',methods=['GET','POST'])
@@ -389,18 +410,23 @@ def newdb():
     newform = DbForm()
     newform.datacenter_id.choices = [(v.id, v.name) for v in Data_Center.query.all()]
     newform.cluster_id.choices = [(v.id, v.name) for v in Db_Cluster.query.all()]
+    newform.monitor.choices = [("1","是"),("0","否")]
     if newform.validate_on_submit():
         newdata = MySQL_Databases(cluster_id=newform.cluster_id.data, name=newform.name.data,
                                   introduction=newform.introduction.data,
                                   applicant=newform.applicant.data,
-                                  datacenter_id=newform.datacenter_id.data, version=newform.version.data,
-                                  ip=newform.ip.data,
-                                  port=newform.port.data)
+                                  datacenter_id=newform.datacenter_id.data, db_user=newform.db_user.data,db_password=newform.db_password.data,
+                                  ip=newform.ip.data,port=newform.port.data,is_monitor=newform.monitor.data)
         if(MySQL_Databases.query.filter_by(name=newform.name.data).first()):
             flash(u'数据库名称已存在')
             return render_template('db_type.html', username=username,myuserid=current_user.id, objForm=newform,href_name=href_name,sub_title=sub_title,messages=get_message(current_user.username))
         db.session.add(newdata)
         db.session.commit()
+        newdata = MySQL_Databases.query.filter_by(name=newform.name.data).first()
+        if newdata.is_monitor == 1:
+            status_data = MySQL_Status(db_name=newdata.name,ip=newdata.ip,port=newdata.port,db_cluster_name=newdata.cluster.name,data_center_name=newdata.data_center.name,is_master=newdata.is_master,is_slave=newdata.is_slave)
+            db.session.add(status_data)
+            db.session.commit()
         return redirect(url_for('dbcenter'))
     else:
         return render_template('db_type.html',username=username,myuserid=current_user.id,objForm=newform,href_name=href_name,sub_title=sub_title,messages=get_message(current_user.username))
@@ -414,30 +440,41 @@ def changedb(db_id):
     newform = DbForm()
     newform.datacenter_id.choices = [(v.id, v.name) for v in Data_Center.query.all()]
     newform.cluster_id.choices = [(v.id, v.name) for v in Db_Cluster.query.all()]
+    olddata = MySQL_Databases.query.filter_by(id=db_id).first()
+    if olddata.is_monitor == 1:
+        newform.monitor.choices = [("1", "是"), ("0", "否")]
+    else:
+        newform.monitor.choices = [("0", "否"), ("1", "是")]
     if request.method == "GET":
-        olddata = MySQL_Databases.query.filter_by(id=db_id).first()
+        #olddata = MySQL_Databases.query.filter_by(id=db_id).first()
         newform.name.data = olddata.name
         newform.datacenter_id.data = olddata.datacenter_id
         newform.cluster_id.data = olddata.cluster_id
-        newform.version.data = olddata.version
         newform.ip.data = olddata.ip
         newform.port.data = olddata.port
+        newform.db_user.data = olddata.db_user
+        newform.db_password.data = olddata.db_password
         newform.applicant.data = olddata.applicant
         newform.introduction.data = olddata.introduction
+        newform.monitor.data = olddata.is_monitor
         return render_template('db_type.html', objForm=newform, username=username,myuserid=current_user.id,href_name=href_name,sub_title=sub_title, messages=get_message(current_user.username))
     elif (MySQL_Databases.query.filter(and_(MySQL_Databases.name==newform.name.data,MySQL_Databases.id != int(db_id))).first()):
         flash(u'数据库名称已存在')
         return render_template('db_type.html', objForm=newform, username=username,myuserid=current_user.id, href_name=href_name,sub_title=sub_title, messages=get_message(current_user.username))
     elif newform.validate_on_submit():
-        olddata = MySQL_Databases.query.filter_by(id=db_id).first()
+        #olddata = MySQL_Databases.query.filter_by(id=db_id).first()
+        status_db_name = olddata.name
         olddata.cluster_id=newform.cluster_id.data
         olddata.name=newform.name.data
         olddata.introduction=newform.introduction.data
         olddata.applicant=newform.applicant.data
         olddata.datacenter_id=newform.datacenter_id.data
-        olddata.version=newform.version.data
+        olddata.db_user = newform.db_user.data
+        olddata.db_password = newform.db_password.data
         olddata.ip=newform.ip.data
         olddata.port=newform.port.data
+        olddata.is_monitor = newform.monitor.data
+        '''
         if ((newform.is_master.data == "alone" and newform.master_id.data != -2)):
             flash(u'主库ID不正确，非主从的独立主机请填写：-2')
             return render_template('db_type.html', username=username,myuserid=current_user.id, objForm=newform, href_name=href_name,sub_title=sub_title, messages=get_message(current_user.username))
@@ -450,18 +487,43 @@ def changedb(db_id):
             if(newform.master_id.data == int(db_id) or ((newform.master_id.data != -1)  and not MySQL_Databases.query.filter_by(id=newform.master_id.data).first())):
                 flash(u'主库ID不正确，非级联主库请填写：-1，级联主库：请填写对应主库的实际ID')
                 return render_template('db_type.html', username=username,myuserid=current_user.id, objForm=newform, href_name=href_name,sub_title=sub_title, messages=get_message(current_user.username))
+        '''
         db.session.commit()
+        newdata = MySQL_Databases.query.filter_by(name=newform.name.data).first()
+        status_data = MySQL_Status.query.filter_by(db_name=status_db_name).first()
+        if newform.monitor.data == '0' and status_data is not None:
+            db.session.delete(status_data)
+            db.session.commit()
+        elif newform.monitor.data == '1' and status_data is None:
+            status_data = MySQL_Status(db_name=newdata.name, ip=newdata.ip, port=newdata.port,
+                                       db_cluster_name=newdata.cluster.name, data_center_name=newdata.data_center.name,
+                                       is_master=newdata.is_master, is_slave=newdata.is_slave)
+            db.session.add(status_data)
+            db.session.commit()
+        elif newform.monitor.data == '1' and status_data is not None:
+            status_data.db_name=newdata.name
+            status_data.ip=newdata.ip
+            status_data.port=newdata.port
+            status_data.db_cluster_name=newdata.cluster.name
+            status_data.data_center_name=newdata.data_center.name
+            status_data.is_master=newdata.is_master
+            status_data.is_slave=newdata.is_slave
+            db.session.commit()
         return redirect(url_for('dbcenter'))
     return render_template('db_type.html', username=username,myuserid=current_user.id, objForm=newform, href_name=href_name, sub_title=sub_title, messages=get_message(current_user.username))
 #删除数据库集群
 @app.route('/deldb/<db_id>',methods=['GET','POST'])
 @login_required
-def deldb(cluster_id):
+def deldb(db_id):
     username = current_user.username
     sub_title = "数据库管理"
     if username:
-        deldbcluster= Db_Cluster.query.filter(Db_Cluster.id==cluster_id).first()
-        db.session.delete(deldbcluster)
+        deldbd_data= MySQL_Databases.query.filter(MySQL_Databases.id==db_id).first()
+        if deldbd_data.is_monitor == 1:
+            del_monitor_data = MySQL_Status.query.filter_by(db_name=deldbd_data.name).delete()
+            del_monitor_status_data = MySQL_Status_History.query.filter_by(db_name=deldbd_data.name).delete()
+            db.session.commit()
+        db.session.delete(deldbd_data)
         db.session.commit()
         db_type = Data_Center.query.all()
         cluster_info = Db_Cluster.query.all()
@@ -469,8 +531,80 @@ def deldb(cluster_id):
         return redirect(url_for('dbcenter'))
     else:
         return redirect(url_for('login'))
+##########################MySQL监控#############################
+#健康监控页面
+@app.route('/health/',methods=['GET','POST'])
+@login_required
+def health():
+    username = current_user.username
+    sub_title = "健康监控"
+    href_name = "健康监控"
+    if username:
+        db_type = Data_Center.query.all()
+        databases_info = db.session.query(MySQL_Databases.id,MySQL_Databases.status,MySQL_Status.db_name,
+                                          MySQL_Status.bytes_received_persecond,MySQL_Status.bytes_sent_persecond,
+                                          MySQL_Status.ip,MySQL_Status.port, MySQL_Status.version, MySQL_Status.is_master,
+                                          MySQL_Status.is_slave, MySQL_Status.last_modify_time,MySQL_Status.uptime,MySQL_Status.threads_connected,
+                                          MySQL_Status.threads_running,MySQL_Status.transaction_persecond,MySQL_Status.questions_persecond,
+                                          MySQL_Replication.master_host).outerjoin(MySQL_Replication,MySQL_Databases.name == MySQL_Replication.db_name).outerjoin(MySQL_Status,MySQL_Status.db_name==MySQL_Databases.name).all()
+        cluster_info = Db_Cluster.query.all()
+        return render_template('mysql_health.html', username=username, myuserid=current_user.id, group_info=db_type,
+                               cluster_info=cluster_info, database_info=databases_info, href_name=href_name,
+                               sub_title=sub_title, messages=get_message(current_user.username))
+    else:
+        return redirect(url_for('login'))
 
-#慢查询分析页面
+#健康图表页面
+@app.route('/health_echarts/<db_name>/',methods=['GET'])
+@login_required
+def health_echarts(db_name):
+    # 创建数据库连接
+    username = current_user.username
+    sub_title = "监控图表"
+    href_name = "慢查询详情"
+    slowsearchform = SlowSearchForm()
+    if request.method == 'GET':
+        if request.args.get('time_range') != None:
+            time_range = request.args.get('time_range')
+        else:
+            time_range = 30
+        return render_template('charts.html', db_name=db_name, username=username, myuserid=current_user.id,
+                               slowquery=slowquery, href_name=href_name, sub_title=sub_title,time_range=time_range,
+                               slowsearchform=slowsearchform,messages=get_message(current_user.username))
+    #return render_template('charts.html', db_name=db_name,username=username, myuserid=current_user.id, slowquery=slowquery, href_name=href_name, sub_title=sub_title,time_range=time_range, messages=get_message(current_user.username))
+
+#复制监控页面
+@app.route('/replication/',methods=['GET','POST'])
+@login_required
+def replication():
+    username = current_user.username
+    sub_title = "复制监控"
+    href_name = "复制监控"
+    if username:
+        db_type = Data_Center.query.all()
+        replication_info = MySQL_Replication.query.all()
+        cluster_info = Db_Cluster.query.all()
+        return render_template('mysql_health.html', username=username, myuserid=current_user.id, group_info=db_type,
+                               cluster_info=cluster_info, database_info=replication_info, href_name=href_name,
+                               sub_title=sub_title, messages=get_message(current_user.username))
+    else:
+        return redirect(url_for('login'))
+
+#复制图表页面
+@app.route('/replication_echarts/<db_name>/',methods=['GET','POST'])
+@login_required
+def replication_echarts(db_name):
+    # 创建数据库连接
+    username = current_user.username
+    sub_title = "复制延迟"
+    href_name = "的延迟数据图"
+    if request.method == "GET":
+        if request.args.get("time_range") is None:
+            time_range = 30
+        else:
+            time_range = request.args.get("time_range")
+        return render_template('charts.html', db_name=db_name,username=username, myuserid=current_user.id, slowquery=slowquery, href_name=href_name, sub_title=sub_title,time_range=time_range, messages=get_message(current_user.username))
+
 #慢查询分析页面
 @app.route('/slowquery/',methods=['GET','POST'])
 @login_required
@@ -559,7 +693,7 @@ def ticketview(tickets_id):
     if request.method == "GET":
         objForm.tickets_num.data = tickets_data.tickets_num
         objForm.applicant.data= tickets_data.applicant
-        objForm.db_id.data = tickets_data._database.name
+        objForm.db_id.data = tickets_data.mysql_databases.name
         objForm.auditor.data = tickets_data.auditor
         objForm.add_time.data = tickets_data.add_time
         objForm.sqlcontent.data = tickets_data.sqlcontent
@@ -571,7 +705,7 @@ def ticketview(tickets_id):
     else:
         objForm.tickets_num.data = tickets_data.tickets_num
         objForm.applicant.data = tickets_data.applicant
-        objForm.db_id.data = tickets_data._database.name #用外键转化为dbname
+        objForm.db_id.data = tickets_data.mysql_databases.name #用外键转化为dbname
         objForm.auditor.data = tickets_data.auditor
         objForm.add_time.data = tickets_data.add_time
         objForm.sqlcontent.data = tickets_data.sqlcontent
@@ -583,7 +717,7 @@ def ticketview(tickets_id):
         operation_execute = '--enable-execute;--enable-ignore-warnings;--enable-force;'
         #拼装目标数据库信息
         target_db = MySQL_Databases.query.filter_by(id=tickets_data.db_id).first()
-        sql_format_start1 = "/*--user=%s;--password=%s;--host=%s;--port=%d;" % (target_db.user,target_db.password,target_db.ip,target_db.port)
+        sql_format_start1 = "/*--user=%s;--password=%s;--host=%s;--port=%d;" % (target_db.db_user,target_db.db_password,target_db.ip,target_db.port)
         sql_format_start2 = "*/\ninception_magic_start;"
         sql_format_end = "inception_magic_commit;"
         if ('check' in request.form.values()):
@@ -720,8 +854,7 @@ def ddl():
         target_db = MySQL_Databases.query.filter_by(id=objForm.db_id.data).first()
         operation_check = '--enable-check;'
         operation_execute = '--enable-execute;--enable-ignore-warnings;--enable-force;'
-        sql_format_start1 = "/*--user=%s;--password=%s;--host=%s;--port=%d;" % (
-        target_db.user, target_db.password, target_db.ip, target_db.port)
+        sql_format_start1 = "/*--user=%s;--password=%s;--host=%s;--port=%d;" % (target_db.db_user, target_db.db_password, target_db.ip, target_db.port)
         sql_format_start2 = "*/\ninception_magic_start;"
         sql_format_end = "inception_magic_commit;"
         if ('check' in request.form.values()):
@@ -783,12 +916,13 @@ def dml():
         target_db = MySQL_Databases.query.filter_by(id=objForm.db_id.data).first()
         operation_check = '--enable-check;'
         operation_execute = '--enable-execute;--enable-ignore-warnings;--enable-force;--enable-remote-backup'
-        sql_format_start1 = "/*--user=%s;--password=%s;--host=%s;--port=%d;" % (target_db.user,target_db.password,target_db.ip,target_db.port)
+        sql_format_start1 = "/*--user=%s;--password=%s;--host=%s;--port=%d;" % (target_db.db_user,target_db.db_password,target_db.ip,target_db.port)
         sql_format_start2 = "*/\ninception_magic_start;"
         sql_format_end = "inception_magic_commit;"
         if ('check' in request.form.values()):
             sql_content = request.form['sqlarea']
             sql = sql_format_start1 + operation_check + sql_format_start2 + "\n" + sql_content + "\n" + sql_format_end
+            print(sql)
             try:
                 connection = pymysql.connect(**inception_config)
                 cur = connection.cursor()
@@ -828,75 +962,153 @@ def dml():
             return redirect('/tickets/')
     return render_template('dml.html', username=username,myuserid=current_user.id, objForm=objForm, href_name=href_name, sub_title=sub_title,messages=get_message(current_user.username))
 
-#############################Fabric功能区域########################################
 
+###Ajax_OneColumn 图表中的表状图
+@app.route('/echarts_ajax/',methods=['GET','POST'])
+@login_required
+def echarts_ajax():
+    if request.method == "POST":
+        db_name = request.form['db_name']   #获取ajax传递过来的参数
+        connection = pymysql.connect(**config_ajax)
+        cursor = connection.cursor()
+        cursor.execute("select threads_connected,max_connection,open_tables,table_open_cache,open_files,open_files_limit,innodb_buffer_pool_pages_data,innodb_buffer_pool_pages_free,innodb_buffer_pool_pages_dirty,innodb_buffer_pool_pages_data as pages_used from mysql_status where db_name = %s",db_name)  # 返回1条或多条数据
+        res = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        a = []
+        for key in res[0]:
+            if key == "threads_connected":
+                a.append({"department":"connected","num":res[0][key]})
+            elif key == "max_connection":
+                a.append({"department": "max_connection", "num": res[0][key]})
+            elif key == "innodb_buffer_pool_pages_data":
+                a.append({"department": "pages_used", "num": res[0][key]})
+            elif key == "innodb_buffer_pool_pages_free":
+                a.append({"department": "pages_free", "num": res[0][key]})
+            elif key == "innodb_buffer_pool_pages_dirty":
+                a.append({"department": "pages_dirty", "num": res[0][key]})
+            elif key == "pages_used":
+                a.append({"department": "pages_data", "num": res[0][key]})
+            else:
+                a.append({"department": key, "num": res[0][key]})
+        data={}
+        data['list']=a
+        return json.dumps(data)
 
+###Ajax_MoreColumn 图标中线状图
+@app.route('/echarts_ajax_more/',methods=['GET','POST'])
+@login_required
+def echarts_ajax_more():
+    if request.method == "POST":
+        db_name = request.form['db_name']   #获取ajax传递过来的参数
+        connection = pymysql.connect(**config_ajax)
+        cursor = connection.cursor()
+        date_format = "%Y-%m-%d %H:%i"
+        limit_ends = json.loads(request.form['limit_ends'])
+        cursor.execute("select * from (select threads_connected,threads_running,threads_created,threads_cached,questions_persecond,transaction_persecond,com_select_persecond,com_insert_persecond,com_update_persecond,com_delete_persecond,com_commit_persecond,com_rollback_persecond,created_tmp_tables_persecond,created_tmp_disk_tables_persecond,created_tmp_files_persecond,connections_persecond,bytes_received_persecond,bytes_sent_persecond,innodb_rows_inserted_persecond,innodb_rows_deleted_persecond,innodb_rows_updated_persecond,innodb_rows_reads_persecond,aborted_clients,aborted_connects,connections,innodb_buffer_pool_reads,innodb_buffer_pool_read_requests,created_tmp_tables,created_tmp_disk_tables,DATE_FORMAT(last_modify_time,%s) as last_time from mysql_status_history where db_name = %s order by last_modify_time desc limit %s) t order by last_time ASC ;",(date_format,db_name,limit_ends))  # 返回1条或多条数据
+        res = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        #定义字典对象
+        column1 = {}
+        a = []
+        last_time = []  #定义存放时间的列表
+        b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,tch,tdr,ibrh = [],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]
+        for row in res:
+            b.append(row['threads_connected'])
+            c.append(row['threads_running'])
+            d.append(row['threads_created'])
+            e.append(row['threads_cached'])
+            f.append(row['questions_persecond'])
+            g.append(row['transaction_persecond'])
+            h.append(row['com_select_persecond'])
+            i.append(row['com_insert_persecond'])
+            j.append(row['com_update_persecond'])
+            k.append(row['com_delete_persecond'])
+            l.append(row['com_commit_persecond'])
+            m.append(row['com_rollback_persecond'])
+            n.append(row['created_tmp_tables_persecond'])
+            o.append(row['created_tmp_disk_tables_persecond'])
+            p.append(row['created_tmp_files_persecond'])
+            q.append(row['connections_persecond'])
+            r.append(row['bytes_received_persecond'])
+            s.append(row['bytes_sent_persecond'])
+            t.append(row['innodb_rows_inserted_persecond'])
+            u.append(row['innodb_rows_deleted_persecond'])
+            v.append(row['innodb_rows_updated_persecond'])
+            w.append(row['innodb_rows_reads_persecond'])
+            x.append(row['aborted_clients'])
+            y.append(row['aborted_connects'])
+            tch.append((1-(row['threads_created']/row['connections']))*100) #线程缓存命中率 正常比列应该是大于90%，否则需要加大threads_cache_size
+            tdr.append((row['created_tmp_disk_tables']/row['created_tmp_tables'])*100)   #磁盘临时表所占比例,小于1%
+            ibrh.append((1-(row['innodb_buffer_pool_reads']/row['innodb_buffer_pool_read_requests']))*100)  #InnodbBuffer缓存命中率，大于90%
+            last_time.append(row['last_time'])
+        column1['threads_connected']=b
+        column1['threads_running'] = c
+        column1['threads_created'] = d
+        column1['threads_cached'] = e
+        column1['qps'] = f
+        column1['tps'] = g
+        column1['select'] = h
+        column1['insert'] = i
+        column1['update'] = j
+        column1['delete'] = k
+        column1['commit'] = l
+        column1['rollback'] = m
+        column1['created tmp tables persecond'] = n
+        column1['created tmp disk tables persecond'] = o
+        column1['created tmp files persecond'] = p
+        column1['connections_persecond'] = q
+        column1['bytes_received_persecond'] = r
+        column1['bytes_sent_persecond'] = s
+        column1['inserted_persecond'] = t
+        column1['deleted_persecond'] = u
+        column1['updated_persecond'] = v
+        column1['reads_persecond'] = w
+        column1['aborted_clients'] = x
+        column1['aborted_connections'] = y
+        column1['Threads Cache Hit Rate'] = tch
+        column1['Disk Temp Table Rate'] = tdr
+        column1['Innodb Buffer Hit Rate'] = ibrh
+        for key in column1:
+            a.append({"department":key,"num":column1[key]})
+        '''
+        a = []
+        last_time = []
+        for row in res:
+            for key in row:
+                if key == "threads_connected":
+                    a.append({"department": "threads_connected", "num": row[key]})
+                elif key != "last_time":
+                    a.append({"department": key, "num": row[key]})
+        for row in res:
+            last_time.append(row['last_time'])
+        '''
+        data={}
+        data['list']=a
+        data['last_time'] = last_time
+        return json.dumps(data)
 
-
-
-
-
-
-
-
-
-
-@app.route('/tables/')
-def tables():
-    return render_template('table.html',messages=get_message(current_user.username))
-
-@app.route('/form/')
-def form():
-    return render_template('form.html',messages=get_message(current_user.username))
-
-@app.route('/charts/')
-def charts():
-    return render_template('chart.html',messages=get_message(current_user.username))
-
-@app.route('/typography/')
-def typography():
-    return render_template('typography.html',messages=get_message(current_user.username))
-
-
-@app.route('/tasks/')
-def tasks():
-    return render_template('tasks.html',messages=get_message(current_user.username))
-
-
-@app.route('/ui/')
-def ui():
-    return render_template('ui.html',messages=get_message(current_user.username))
-
-@app.route('/widgets/')
-def widgets():
-    return render_template('widgets.html',messages=get_message(current_user.username))
-@app.route('/calendar/')
-def calendar():
-    return render_template('calendar.html',messages=get_message(current_user.username))
-@app.route('/file-manager/')
-def filemanager():
-    return render_template('file-manager.html',messages=get_message(current_user.username))
-@app.route('/icons/')
-def icons():
-    return render_template('icon.html',messages=get_message(current_user.username))
-
-
-async def fun(cluster_id):
-    dbname = {}
-    dbarry = []
-    db = MySQL_Databases.query.filter_by(cluster_id=cluster_id).all()
-    print("异步开始")
-    for i in db:
-        dbname['name'] = i.name
-        dbarry.append(dbname)
-    #await asyncio.sleep(2)
-    print("guo le 10 miao")
-    return 1
-@app.route('/getdata/<cluster_id>')
-def getdata(cluster_id):
-    loop = asyncio.get_event_loop()
-    print("begin")
-    loop.run_until_complete(fun(cluster_id))
-    loop.close()
-    print("End")
-    return 33
+###复制监控延迟数据
+@app.route('/replication_echarts_ajax/',methods=['GET','POST'])
+@login_required
+def replication_echarts_ajax():
+    if request.method == "POST":
+        db_name = request.form['db_name']   #获取ajax传递过来的参数
+        connection = pymysql.connect(**config_ajax)
+        cursor = connection.cursor()
+        date_format = "%Y-%m-%d %H:%i"
+        limit_ends = json.loads(request.form['limit_ends'])
+        cursor.execute("select * from (select delay,DATE_FORMAT(last_modify_time,%s) as last_time from mysql_replication_history where db_name = %s order by last_modify_time desc limit %s) t order by last_time ASC ;",(date_format,db_name,limit_ends))  # 返回1条或多条数据
+        res = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        a,num,last_time = [{"department":"delay","num":0}],[],[]
+        for row in res:
+            num.append(row['delay'])
+            last_time.append(row['last_time'])
+        a[0]['num'] = num
+        data={}
+        data['list'] = a
+        data['last_time'] = last_time
+        return json.dumps(data)

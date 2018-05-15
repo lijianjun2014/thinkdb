@@ -1,12 +1,17 @@
 from flask import Flask, url_for, request, redirect, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager #引入登录登入模块
+from flask_socketio import SocketIO, emit  #引入websocket模块
 from gevent import monkey
 monkey.patch_all()
 
 app = Flask(__name__)
 app.config.from_object('config')
 db = SQLAlchemy(app)
+async_mode = None
+socketio = SocketIO(app,async_mode=async_mode)
+
+
 #初始化login_manager参数相关
 login_manager = LoginManager()
 login_manager.session_protection='strong'

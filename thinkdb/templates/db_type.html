@@ -72,13 +72,6 @@
                                 </div></div>
 							{% elif href_name == "添加MySQL实例" or href_name == "修改MySQL实例"%}
 								<div class="control-group">
-                                   <label class="control-label-self" for="focusedInput">数据库名称:</label>
-								<div class="controls-self">
-                                  <!-- 接收从后台穿过来的FORM对象，自动生成INPUT -->
-                                  {{objForm.name}}
-                                  <!-- 如果后台返回了错误信息，则将信息放入Span标签，否则不显示！-->
-                                </div></div>
-								<div class="control-group">
                                    <label class="control-label-self" for="focusedInput">数据中心:</label>
 								<div class="controls-self">
                                   <!-- 接收从后台穿过来的FORM对象，自动生成INPUT -->
@@ -92,11 +85,11 @@
                                   {{objForm.cluster_id}}
                                   <!-- 如果后台返回了错误信息，则将信息放入Span标签，否则不显示！-->
                                 </div></div>
-								<div class="control-group">
-                                   <label class="control-label-self" for="focusedInput">软件版本:</label>
+                                <div class="control-group">
+                                   <label class="control-label-self" for="focusedInput">数据库名称:</label>
 								<div class="controls-self">
                                   <!-- 接收从后台穿过来的FORM对象，自动生成INPUT -->
-                                  {{objForm.version}}
+                                  {{objForm.name}}
                                   <!-- 如果后台返回了错误信息，则将信息放入Span标签，否则不显示！-->
                                 </div></div>
 								<div class="control-group">
@@ -113,6 +106,20 @@
                                   {{objForm.port}}
                                   <!-- 如果后台返回了错误信息，则将信息放入Span标签，否则不显示！-->
                                 </div></div>
+                                <div class="control-group">
+                                   <label class="control-label-self" for="focusedInput">用户名:</label>
+								<div class="controls-self">
+                                  <!-- 接收从后台穿过来的FORM对象，自动生成INPUT -->
+                                  {{objForm.db_user}}
+                                  <!-- 如果后台返回了错误信息，则将信息放入Span标签，否则不显示！-->
+                                </div></div>
+                                <div class="control-group">
+                                   <label class="control-label-self" for="focusedInput">密码:</label>
+								<div class="controls-self">
+                                  <!-- 接收从后台穿过来的FORM对象，自动生成INPUT -->
+                                  {{objForm.db_password}}
+                                  <!-- 如果后台返回了错误信息，则将信息放入Span标签，否则不显示！-->
+                                </div></div>
 								<div class="control-group">
                                    <label class="control-label-self" for="focusedInput">申请人:</label>
 								<div class="controls-self">
@@ -120,7 +127,13 @@
                                   {{objForm.applicant}}
                                   <!-- 如果后台返回了错误信息，则将信息放入Span标签，否则不显示！-->
                                 </div></div>
-
+                                <div class="control-group">
+                                   <label class="control-label-self" for="focusedInput">是否监控:</label>
+								<div class="controls-self">
+                                  <!-- 接收从后台穿过来的FORM对象，自动生成INPUT -->
+                                  {{objForm.monitor}}
+                                  <!-- 如果后台返回了错误信息，则将信息放入Span标签，否则不显示！-->
+                                </div></div>
 								{% endif %}
 								<div class="control-group">
                                    <label class="control-label-self" for="focusedInput">简介:</label>

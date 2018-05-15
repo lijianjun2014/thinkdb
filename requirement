@@ -16,7 +16,8 @@ pycryptodome==3.5.1
 asyncio==3.4.3
 gevent==1.2.2
 fabric3
-
+flask-socketio==2.9.6
+psutil==5.4.5
 #需要修改的程序的地方
 1、如果按照正确格式书写后还是报错：2576, 'Must start as begin statement;
     修改pymysql的cursor.py  338行 讲self._show_warnings()这一句注释掉，换成pass

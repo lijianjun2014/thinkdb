@@ -38,6 +38,7 @@
 	<!-- start: Favicon -->
 	<link rel="shortcut icon" href="/static/img/favicon.ico">
 	<!-- end: Favicon -->
+    <script src="/static/js/jquery-1.9.1.min.js"></script>
 
 </head>
 
@@ -138,8 +139,10 @@
                         <li><a href="{{url_for('usercenter')}}"><i class="icon-user"></i><span class="hidden-tablet"> 用户管理</span></a></li>
 						<li><a href="{{url_for('dbcenter')}}"><i class="icon-sitemap"></i><span class="hidden-tablet"> 数据库中心</span></a></li>
 						<li>
-							<a class="dropmenu" href="#"><i class="icon-folder-close-alt"></i><span class="hidden-tablet"> MySQL监控</span><span class="label label-important"> 1 </span></a>
+							<a class="dropmenu" href="#"><i class="icon-folder-close-alt"></i><span class="hidden-tablet"> MySQL监控</span><span class="label label-important"> 3 </span></a>
 							<ul>
+                                <li><a class="submenu" href="{{url_for('health')}}"><i class="icon-file-alt"></i><span class="hidden-tablet"> 健康监控</span></a></li>
+                                <li><a class="submenu" href="{{url_for('replication')}}"><i class="icon-file-alt"></i><span class="hidden-tablet"> 复制监控</span></a></li>
 								<li><a class="submenu" href="{{url_for('slowquery')}}"><i class="icon-file-alt"></i><span class="hidden-tablet"> 慢查询分析</span></a></li>
 							</ul>
 						</li>
@@ -152,6 +155,7 @@
 							</ul>
 						</li>
 
+                        <!--
 						<li><a href="{{url_for('tasks')}}"><i class="icon-tasks"></i><span class="hidden-tablet"> Tasks</span></a></li>
 						<li><a href="{{url_for('ui')}}"><i class="icon-eye-open"></i><span class="hidden-tablet"> UI Features</span></a></li>
 						<li><a href="{{url_for('widgets')}}"><i class="icon-dashboard"></i><span class="hidden-tablet"> Widgets</span></a></li>
@@ -163,7 +167,7 @@
 						<li><a href="{{url_for('calendar')}}"><i class="icon-calendar"></i><span class="hidden-tablet"> Calendar</span></a></li>
 						<li><a href="{{url_for('filemanager')}}"><i class="icon-folder-open"></i><span class="hidden-tablet"> File Manager</span></a></li>
 						<li><a href="{{url_for('icons')}}"><i class="icon-star"></i><span class="hidden-tablet"> Icons</span></a></li>
-
+                        -->
 						<li><a href="/logout/"><i class="icon-lock"></i><span class="hidden-tablet"> Logout</span></a></li>
 
 					</ul>
@@ -216,6 +220,8 @@
                 {% endblock %}
                 {% block widgets %}
                 {% endblock %}
+                {% block health %}
+                {% endblock %}
 				{% block table %}
                 {% endblock %}
                 {% block message %}
@@ -230,7 +236,7 @@
 	<footer>
 
 		<p>
-			<span style="text-align:left;float:left">&copy; 2013 <a href="downloads/janux-free-responsive-admin-dashboard-template/" alt="Bootstrap_Metro_Dashboard">JANUX Responsive Dashboard</a></span>
+			<span style="text-align:left;float:left">&copy; 2018 <a href="downloads/janux-free-responsive-admin-dashboard-template/" alt="Bootstrap_Metro_Dashboard">JANUX Responsive Dashboard</a></span>
 
 		</p>
 
@@ -291,6 +297,7 @@
 		<script src="/static/js/retina.js"></script>
 
 		<script src="/static/js/custom.js"></script>
+        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
 
 	<!-- end: JavaScript-->
 

@@ -70,7 +70,11 @@
 									<td class="center">{{c.stage}}</td>
                                     <td class="center">{{c.errlevel}}</td>
 									<td class="center">{{c.stagestatus}}</td>
-									<td class="right">{{c.errormessage}}</td>
+                                    {% if c.errormessage != "None" %}
+                                        <td class="right"><font color="red">{{c.errormessage}}</font></td>
+                                    {% else %}
+                                        <td class="right">{{c.errormessage}}</td>
+                                    {% endif %}
 									<td class="center">{{c.SQL}}</td>
 									<td class="center">{{c.Affected_rows}}</td>
 

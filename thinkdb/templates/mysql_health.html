@@ -1,87 +1,90 @@
 			{% extends 'base.html' %}
-			{% block table %}
+			{% block health %}
 
 			<ul class="breadcrumb">
 				<li>
 					<i class="icon-home"></i>
-					<a href="{% url 'thinkdb:index' %}">Home</a>
+					<a href="{{ url_for('index') }}">Home</a>
 					<i class="icon-angle-right"></i>
 				</li>
 				<li><a href="#">{{sub_title}}</a></li>
 			</ul>
 
+            {% if sub_title == "健康监控" %}
             <div class="row-fluid sortable">
 				<div class="box span12">
 					<div class="box-header" data-original-title>
-						<h2><i class="halflings-icon white user"></i><span class="break"></span>数据库列表</h2>
+						<h2><i class="halflings-icon white tasks"></i><span class="break"></span>{{ href_name }}</h2>
 						<div class="box-icon">
 							<a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+							<a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
 						</div>
 					</div>
 					<div class="box-content">
-						<table class="table table table table-striped table datatable table-bordered table  table table table table bootstrap-datatable">
+						<table class="table table table-striped table datatable table-bordered table  table table table table bootstrap-datatable">
 
 						  <thead>
 							  <tr>
-								  <th>ID</th>
-								  <th>Tags</th>
-								  <th>CLuster</th>
-                                  <th>Type</th>
-                                  <th>Version</th>
-								  <th>IP</th>
-								  <th>Port</th>
-								  <th>M/S</th>
-                                  <th>MasterID</th>
-                                  <th>Status</th>
-                                  <th>Introduction</th>
-                                  <th>Date_Joined</th>
-                                  <th>Action</th>
+
+								  <th>数据库名称</th>
+                                  <th>IP</th>
+                                  <th>状态</th>
+                                  <th>M/S</th>
+                                  <th>版本</th>
+                                  <th>连接线程</th>
+                                  <th>活动线程</th>
+								  <th>每秒查询</th>
+                                  <th>每秒事务</th>
+                                  <th>最后检测时间</th>
+                                  <th>查看图表</th>
 
 							  </tr>
 						  </thead>
 						  <tbody>
-                          {% for u in database_info %}
+                          {% for d in database_info %}
 							<tr>
-								<td class="center">{{u.id}}</td>
-								<td class="center">{{u.db_tag}}</td>
-								<td class="center">{{u.cluster}}</td>
-                                <td class="center">{{u.type}}</td>
-                                <td class="center">{{u.version}}</td>
-								<td class="center">{{u.ip}}</td>
-								<td class="center">{{u.port}}</td>
+
+                                <td class="center"><a href="{{ url_for('health_echarts',db_name = d.db_name) }}" target ="_blank" >{{d.db_name}}</a></td>
+                                <td class="center">{{d.ip}}:{{ d.port }}</td>
+                                <td class="center">
+                                    {% if d.status == "active" %}
+									<span class="label label-success" title data-rel="tooltip"   data-original-title="在线">Active</span>
+                                    {% elif d.status == "inactive" %}
+                                        <span class="label" title data-rel="tooltip"   data-original-title="下线">Down</span>
+									{% else %}
+										<span class="label" title data-rel="tooltip"   data-original-title="未知">Unknown</span>
+                                    {% endif %}
+								</td>
+                                <td class="center">
+                                    {% if d.is_master == 1 and d.is_slave == 0 %}
+									<span class="label label-success" title data-rel="tooltip"   data-original-title="主库">Master</span>
+                                    {% elif d.is_master == 0 and d.is_slave == 1 %}
+                                    <span class="label label-warning" title data-rel="tooltip"   data-original-title="从库">Slave</span>
+                                    {% elif d.is_master == 1 and d.is_slave == 1 %}
+                                    <span class="label label-important" title data-rel="tooltip"   data-original-title="独立主机">Cascade</span>
+                                    {% else %}
+                                    <span class="label label-important" title data-rel="tooltip"   data-original-title="独立主机">Alone</span>
+                                    {% endif %}
+								</td>
+                                <td class="center">{{d.version[0:6]}}</td>
+                                <td class="center">{{d.threads_connected}}</td>
+                                <td class="center">{{ d.threads_running }}</td>
+								<td class="center">{{d.questions_persecond}}</td>
+                                <td class="center">{{d.transaction_persecond}}</td>
+                                <td class="center">{{d.last_modify_time}}</td>
 
 								<td class="center">
-                                    {% if u.is_master == 1%}
-									<span class="label label-success" title data-rel="tooltip"   data-original-title="主库">Master</span>
-                                    {% else %}
-                                        {% if u.is_master == 0 %}
-                                        <span class="label label-warning" title data-rel="tooltip"   data-original-title="从库">Slave</span>
-                                        {% else %}
-                                        <span class="label label-important" title data-rel="tooltip"   data-original-title="独立">Alone</span>
-                                        {% endif %}
-                                    {% endif %}
-								</td>
-                                <td class="center">{{u.master_id}}</td>
-								<td class="center">
-                                    {% if u.is_online == 1%}
-									<span class="label label-success" title data-rel="tooltip"   data-original-title="在线">Up</span>
-                                    {% else %}
-                                        <span class="label" title data-rel="tooltip"   data-original-title="下线">Down</span>
-                                    {% endif %}
-								</td>
-                                <td class="center">{{u.introduction}}</td>
-                                <td class="center">{{u.add_time|date:"Y-m-d"}}</td>
-								<td class="center">
-									<a class="label label-success" href="{% url 'thinkdb:newdb' %}" title data-rel="tooltip"   data-original-title="添加">
+									<a class="label label-success" href="{{ url_for('health_echarts',db_name = d.db_name) }}" title data-rel="tooltip"   data-original-title="查看图表" target ="_blank">
 										<i class="halflings-icon white zoom-in"></i>
 									</a>
-									<a class="label label-warning" href="{% url 'thinkdb:changedb' u.id %}" title data-rel="tooltip"   data-original-title="修改">
+                                    <!--
+									<a class="label label-warning" href="{{url_for('changedb',db_id=d.id)}}" title data-rel="tooltip"   data-original-title="修改">
 										<i class="halflings-icon white edit"></i>
 									</a>
-									<a class="label label-important" href="{% url 'thinkdb:deletedb' u.id %}" title data-rel="tooltip"   data-original-title="删除">
+									<a class="label label-important" href="{{url_for('deldb',db_id=d.id)}}" title data-rel="tooltip"   data-original-title="删除">
 										<i class="halflings-icon white trash"></i>
 									</a>
-
+                                    -->
 								</td>
 
 							</tr>
@@ -92,8 +95,66 @@
 					  </table>
 					</div>
 				</div><!--/span-->
+            {% else %}
+            <div class="row-fluid sortable">
+				<div class="box span12">
+					<div class="box-header" data-original-title>
+						<h2><i class="halflings-icon white tasks"></i><span class="break"></span>{{ href_name }}</h2>
+						<div class="box-icon">
+							<a href="{{url_for('newdb')}}"><i class="halflings-icon white wrench"></i></a>
+							<a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+							<a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+						</div>
+					</div>
+					<div class="box-content">
+						<table class="table table table-striped table datatable table-bordered table  table table table table bootstrap-datatable">
 
-			</div><!--/row-->
+						  <thead>
+							  <tr>
+								  <th>数据库名称</th>
+                                  <th>IP</th>
+                                  <th>GTID</th>
+                                  <th>只读</th>
+                                  <th>IO</th>
+								  <th>SQL</th>
+                                  <th>延时</th>
+                                  <th>主库文件</th>
+                                  <th>位置</th>
+                                  <th>执行文件</th>
+                                  <th>位置</th>
+                                  <th>图表</th>
+							  </tr>
+						  </thead>
+						  <tbody>
+                          {% for d in database_info %}
+							<tr>
 
+                                <td class="center"><font size="1"><a href="{{ url_for('replication_echarts',db_name = d.db_name) }}" target ="_blank" >{{d.db_name}}</a></font></td>
+                                <td class="center"><font size="1">{{d.ip}}:{{ d.port }}</font></td>
+                                <td class="center"><font size="1">{{d.gtid_mode}}</font></td>
+                                <td class="center"><font size="1">{{d.read_only}}</font></td>
+                                <td class="center"><font size="1">{{ d.slave_io_run }}</font></td>
+                                <td class="center"><font size="1">{{d.slave_sql_run}}</font></td>
+                                <td class="center">{{d.delay}}</td>
+                                <td class="center"><font size="1">{{d.master_log_file}}</font></td>
+                                <td class="center">{{d.read_master_log_pos}}</td>
+                                <td class="center"><font size="1">{{d.relay_master_log_file}}</font></td>
+                                <td class="center">{{d.exec_master_log_pos}}</td>
+								<td class="center">
+									<a class="label label-success" href="{{ url_for('replication_echarts',db_name = d.db_name) }}" title data-rel="tooltip"   data-original-title="查看图表" target ="_blank" >
+										<i class="halflings-icon white zoom-in"></i>
+									</a>
+								</td>
+
+							</tr>
+
+                          {% endfor %}
+						  </tbody>
+
+					  </table>
+					</div>
+				</div><!--/span-->
+            {% endif %}
+            </div>
     		{% endblock %}
 

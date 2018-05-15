@@ -42,12 +42,14 @@ class DbForm(FlaskForm):
     name = StringField('name',validators=[DataRequired()],render_kw={"placeholder": "数据库名称(标识)"})
     datacenter_id = SelectField(coerce=int)
     cluster_id = SelectField(coerce=int)
-    version = StringField('version',validators=[DataRequired()],render_kw={"placeholder":"软件版本"})
+    db_user = StringField('db_user',validators=[DataRequired()],render_kw={"placeholder":"数据库用户"})
+    db_password = StringField('db_password', validators=[DataRequired()], render_kw={"placeholder": "数据库用户密码","type":"password"})
+    #version = StringField('version',validators=[DataRequired()],render_kw={"placeholder":"软件版本"})
     ip = StringField('IP',validators=[DataRequired()],render_kw={"placeholder":"IP Address"})
     port = IntegerField('Port',validators=[DataRequired()],render_kw={"placeholder":"Port"})
     applicant = StringField("application_user",validators=[DataRequired()],render_kw={"placeholder": "数据库申请人"})
     introduction = StringField('Introduction',validators=[DataRequired()],render_kw={"placeholder": "数据库用途简介"})
-
+    monitor = SelectField("是否开启监控",validators=[DataRequired()],choices=[("1", "是"), ("0", "否")])
 #SQL and DDL目标数据库表单
 class TargetDbForm(FlaskForm):
     #cluster_id = SelectField(coerce=int)
@@ -73,5 +75,8 @@ class SlowSearchForm(FlaskForm):
     end_time = DateTimeField('结束时间')
 
 
+###########################Fabric 功能区表格###############################
+class SimpleForm(FlaskForm):
+    command_name = StringField("命令",validators=[DataRequired()],render_kw={"placeholder":"请填写要执行的命令"})
 
 

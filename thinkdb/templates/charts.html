@@ -1,0 +1,632 @@
+{% extends 'base.html' %}
+			{% block chart %}
+
+
+			<ul class="breadcrumb">
+				<li>
+					<i class="icon-home"></i>
+					<a href="{{url_for('index')}}">Home</a>
+					<i class="icon-angle-right"></i>
+				</li>
+
+				<li>
+                    {{sub_title}}
+                    <i class="icon-angle-right"></i>
+                </li>
+
+                <li><a href="javascript:window.close();">关闭本页面</a></li>
+
+			</ul>
+            <div class="control-group">
+
+							<fieldset>
+							  <div class="controls-self-search">
+                                  <div class="btn-group" data-toggle="buttons-radio">
+                                      <form class="form-horizontal" method="get">
+                                      <button class="btn btn-primary" name="time_range" value="30">30 分钟</button>
+                                      <button class="btn btn-primary" name="time_range" value="60">1 小时</button>
+                                      <button class="btn btn-primary" name="time_range" value="180">3 小时</button>
+                                      <button class="btn btn-primary" name="time_range" value="360">6 小时</button>
+                                      <button class="btn btn-primary" name="time_range" value="720">12    小时</button>
+                                      <button class="btn btn-primary" name="time_range" value="1440">1 天</button>
+                                      <button class="btn btn-primary" name="time_range" value="4320">3 天</button>
+                                      <button class="btn btn-primary" name="time_range" value="10080">1 周</button>
+                                      <button class="btn btn-primary" name="time_range" value="20160">2 周</button>
+                                      <button class="btn btn-primary" name="time_range" value="43200">1 月</button>
+                                      </form>
+                                  </div>
+							  </div>
+                            </fieldset>
+
+            </div>
+            {% if sub_title == "监控图表" %}
+                <div class="row-fluid sortable">
+                    <div class="box span4">
+                        <div class="box-header">
+                            <h2><i class="halflings-icon white user"></i><span class="break"></span>连接池</h2>
+                        </div>
+                        <div class="box-content">
+                                <div id="connection_pool" style="height:300px"></div>
+                        </div>
+                    </div>
+
+                    <div class="box span4">
+                        <div class="box-header" data-original-title>
+                            <h2><i class="halflings-icon white tasks"></i><span class="break"></span>表缓存</h2>
+                        </div>
+                        <div class="box-content">
+                             <div id="table_cache" style="height: 300px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="box span4">
+                        <div class="box-header" data-original-title>
+                            <h2><i class="halflings-icon white file"></i><span class="break"></span>可用文件数</h2>
+                        </div>
+                        <div class="box-content">
+                             <div id="file_limit" style="height: 300px;"></div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="row-fluid sortable">
+                    <div class="box span4">
+                        <div class="box-header">
+                            <h2><i class="halflings-icon white list-alt"></i><span class="break"></span>InnoDB Buffer Pool</h2>
+                        </div>
+                        <div class="box-content">
+                                <div id="innodbBufferPool" style="height:300px"></div>
+                        </div>
+                    </div>
+
+                    <div class="box span4">
+                        <div class="box-header" data-original-title>
+                            <h2><i class="halflings-icon white list-alt"></i><span class="break"></span>InnoDB Buffer Pool Dirty Pages</h2>
+                        </div>
+                        <div class="box-content">
+                             <div id="innodbBufferPoolDirty" style="height: 300px;"></div>
+                        </div>
+                    </div>
+
+
+                </div>
+
+
+
+                <div class="row-fluid">
+
+                    <div class="box">
+                        <div class="box-header">
+                            <h2><i class="halflings-icon white list-alt"></i><span class="break"></span>Attention Parameter</h2>
+                            <div class="box-icon">
+
+                                <a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+                                <a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+                            </div>
+                        </div>
+                        <div class="box-content">
+                            <div id="normalRateEcharts"  class="center" style="height:300px;" ></div>
+                        </div>
+                    </div>
+
+                    <div class="box">
+                        <div class="box-header">
+                            <h2><i class="halflings-icon white list-alt"></i><span class="break"></span>Threads</h2>
+                            <div class="box-icon">
+
+                                <a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+                                <a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+                            </div>
+                        </div>
+                        <div class="box-content">
+                            <div id="threads_echarts"  class="center" style="height:300px;" ></div>
+                        </div>
+                    </div>
+
+                    <div class="box">
+                        <div class="box-header">
+                            <h2><i class="halflings-icon white list-alt"></i><span class="break"></span>QPS-TPS</h2>
+                            <div class="box-icon">
+
+                                <a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+                                <a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+                            </div>
+                        </div>
+                        <div class="box-content">
+                            <div id="qpstps_echarts" class="center" style="height:300px"></div>
+                        </div>
+                    </div>
+
+                    <div class="box">
+                        <div class="box-header">
+                            <h2><i class="halflings-icon white list-alt"></i><span class="break"></span>DML Persecond</h2>
+                            <div class="box-icon">
+
+                                <a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+                                <a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+                            </div>
+                        </div>
+                        <div class="box-content">
+                            <div id="dmlPersecond" class="center" style="height:300px"></div>
+                        </div>
+                    </div>
+
+                    <div class="box">
+                        <div class="box-header">
+                            <h2><i class="halflings-icon white list-alt"></i><span class="break"></span>Transaction Persecond</h2>
+                            <div class="box-icon">
+
+                                <a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+                                <a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+                            </div>
+                        </div>
+                        <div class="box-content">
+                            <div id="transactionPersecond" class="center" style="height:300px"></div>
+                        </div>
+                    </div>
+
+                    <div class="box">
+                        <div class="box-header">
+                            <h2><i class="halflings-icon white list-alt"></i><span class="break"></span>Created Temp Persecond</h2>
+                            <div class="box-icon">
+
+                                <a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+                                <a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+                            </div>
+                        </div>
+                        <div class="box-content">
+                            <div id="tempPersecond" class="center" style="height:300px"></div>
+                        </div>
+                    </div>
+
+                    <div class="box">
+                        <div class="box-header">
+                            <h2><i class="halflings-icon white list-alt"></i><span class="break"></span>Network(unit bytes)</h2>
+                            <div class="box-icon">
+
+                                <a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+                                <a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+                            </div>
+                        </div>
+                        <div class="box-content">
+                            <div id="networkPersecond" class="center" style="height:300px"></div>
+                        </div>
+                    </div>
+
+                    <div class="box">
+                        <div class="box-header">
+                            <h2><i class="halflings-icon white list-alt"></i><span class="break"></span>InnoDB Rows DML Persecond</h2>
+                            <div class="box-icon">
+
+                                <a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+                                <a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+                            </div>
+                        </div>
+                        <div class="box-content">
+                            <div id="innodbRowsDmlPersecond" class="center" style="height:300px"></div>
+                        </div>
+                    </div>
+
+                    <div class="box">
+                        <div class="box-header">
+                            <h2><i class="halflings-icon white list-alt"></i><span class="break"></span>Aborted</h2>
+                            <div class="box-icon">
+
+                                <a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+                                <a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+                            </div>
+                        </div>
+                        <div class="box-content">
+                            <div id="abortedEcharts" class="center" style="height:300px"></div>
+                        </div>
+                    </div>
+
+                </div>
+
+
+
+                <hr>
+
+                <div class="row-fluid sortable">
+                    <div class="box span12">
+                        <div class="box-header">
+                            <h2><i class="halflings-icon white list-alt"></i><span class="break"></span>Realtime</h2>
+                            <div class="box-icon">
+                                <a href="#" class="btn-setting"><i class="halflings-icon white wrench"></i></a>
+                                <a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+                                <a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+                            </div>
+                        </div>
+                        <div class="box-content">
+                             <div id="realtimechart" style="height:190px;"></div>
+                             <p>You can update a chart periodically to get a real-time effect by using a timer to insert the new data in the plot and redraw it.</p>
+                             <p>Time between updates: <input id="updateInterval" type="text" value="" style="text-align: right; width:5em"> milliseconds</p>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- Import BaiDu Echarts JS start-->
+            <!-- ECharts单文件引入 -->
+            <script src="http://echarts.baidu.com/build/dist/echarts-all.js"></script>
+            <script type="text/javascript">
+            function loadOneColumn() {
+                var connectionPool = echarts.init(document.getElementById('connection_pool'));
+                var tableOpenCache = echarts.init(document.getElementById('table_cache'));
+                var fileLimit = echarts.init(document.getElementById('file_limit'));
+                var innodbBufferPool = echarts.init(document.getElementById('innodbBufferPool'));
+                var innodbBufferPoolDirty = echarts.init(document.getElementById('innodbBufferPoolDirty'));
+                //var threads = echarts.init(document.getElementById('threads_echarts'));
+                // 显示标题，图例和空的坐标轴
+                var publicOption= {
+                    color: ['#ff7d27', '#47b73d'],//饼图颜色
+                    title : {
+                                //text: '连接池',
+                                //subtext: '纯属虚构',
+                                x:'center'
+                            },
+                            tooltip : {
+                                trigger: 'item',
+                                formatter: "{a} <br/>{b} : {c} ({d}%)"
+                            },
+                            legend: {
+                                orient : 'vertical',
+                                x : 'left',
+                                data:[]
+                            },
+                            toolbox: {
+                                show : true,
+                                feature : {
+                                    //mark : {show: true},
+                                    dataView : {show: true, readOnly: false},
+                                    restore : {show: true},
+                                    saveAsImage : {show: true}
+                                }
+                            },
+                            calculable : true,
+                            series : [
+                                {
+                                    //name:'连接池',
+                                    type:'pie',
+                                    radius : '50%',
+                                    center: ['50%', '55%'],
+                                    data:[]
+                                }
+                            ]
+                        };
+                var names = [];    //类别数组（用于存放饼图的类别）
+                var backend_data = [];
+                var db_name = {{ db_name|tojson }};
+                $.ajax({
+
+                    type: 'POST',
+                    data:{"db_name":db_name},
+                    url: '{{ url_for('echarts_ajax') }}',//请求数据的地址
+                    dataType: "json",        //返回数据形式为json
+                    success: function (result) {
+                        //请求成功时执行该函数内容，result即为服务器返回的json对象
+                        $.each(result.list, function (index, item) {
+                            names.push(item.department);    //挨个取出类别并填入类别数组
+                            backend_data.push({
+                                name: item.department,
+                                value: item.num
+                            });
+                        });
+                        //连接池数据初始化与写入
+                        connectionPool.showLoading();    //数据加载完之前先显示一段简单的loading动画
+                        connectionPoolOption = publicOption;
+                        connectionPoolOption.legend.data = names.slice(0,2);
+                        connectionPoolOption.series[0].data = backend_data.slice(0,2);
+                        connectionPool.hideLoading();    //隐藏加载动画
+                        connectionPool.setOption(connectionPoolOption);
+                        //表缓存写入后端传入的数据
+                        tableOpenCache.showLoading();    //数据加载完之前先显示一段简单的loading动画
+                        tableopencacheOption = publicOption;
+                        tableopencacheOption.legend.data = names.slice(2,4);
+                        tableopencacheOption.series[0].data = backend_data.slice(2,4);
+                        tableOpenCache.hideLoading();    //隐藏加载动画
+                        tableOpenCache.setOption(tableopencacheOption);
+                        //可用文件数写入后端传入的数据
+                        fileLimit.showLoading();    //数据加载完之前先显示一段简单的loading动画
+                        filelimitOption = publicOption;
+                        filelimitOption.legend.data = names.slice(4,6);
+                        filelimitOption.series[0].data = backend_data.slice(4,6);
+                        fileLimit.hideLoading();    //隐藏加载动画
+                        fileLimit.setOption(filelimitOption);
+                        // InnodbBufferPool初始化和写入后端传入的数据
+                        innodbBufferPool.showLoading();    //数据加载完之前先显示一段简单的loading动画
+                        innodbbufferpoolOption = publicOption;
+                        innodbbufferpoolOption.legend.data = names.slice(6,8);
+                        innodbbufferpoolOption.series[0].data = backend_data.slice(6,8);
+                        innodbBufferPool.hideLoading();    //隐藏加载动画
+                        innodbBufferPool.setOption(innodbbufferpoolOption);
+
+                        // innodbBufferPoolDirty 初始化和写入后端传入的数据
+                        innodbBufferPoolDirty.showLoading();    //数据加载完之前先显示一段简单的loading动画
+                        innodbbufferpooldirtyOption = publicOption;
+                        innodbbufferpooldirtyOption.legend.data = names.slice(8,10);
+                        innodbbufferpooldirtyOption.series[0].data = backend_data.slice(8,10);
+                        innodbBufferPoolDirty.hideLoading();    //隐藏加载动画
+                        innodbBufferPoolDirty.setOption(innodbbufferpooldirtyOption);
+                    },
+                    error: function (errorMsg) {
+                        //请求失败时执行该函数
+                        alert("图表请求数据失败!");
+                        connectionPool.hideLoading();
+                    }
+                });
+            };
+            function loadMoreColumn() {
+                var threads = echarts.init(document.getElementById('threads_echarts'));
+                var qpstps_echarts = echarts.init(document.getElementById('qpstps_echarts'));
+                var dmlPersecond = echarts.init(document.getElementById('dmlPersecond'));
+                var transactionPersecond = echarts.init(document.getElementById('transactionPersecond'));
+                var tempPersecond = echarts.init(document.getElementById('tempPersecond'));
+                var networkPersecond = echarts.init(document.getElementById('networkPersecond'));
+                var innodbRowsDmlPersecond = echarts.init(document.getElementById('innodbRowsDmlPersecond'));
+                var abortedEcharts = echarts.init(document.getElementById('abortedEcharts'));
+                var normalRateEcharts = echarts.init(document.getElementById('normalRateEcharts'));
+                // 显示标题，图例和空的坐标轴
+                //公共option定义
+                optionPublic={
+                    tooltip : {
+                        trigger: 'axis'
+                    },
+                    legend: {
+                        data:[]
+                    },
+                    toolbox: {
+                        show : true,
+                        feature : {
+                            //mark : {show: true},
+                            //dataView : {show: true, readOnly: false},
+                            magicType : {show: true, type: ['line', 'bar']},
+                            restore : {show: true},
+                            saveAsImage : {show: true}
+                        }
+                    },
+                    calculable : true,
+                    xAxis : [
+                        {
+                            type : 'category',
+                            boundaryGap : false,
+                            data :  []
+                        }
+                    ],
+                    yAxis : [
+                        {
+                            type : 'value'
+                        }
+                    ],
+                    series : []
+                };
+                //optionPublic 公用optionPublic ends
+                var names = [];    //类别数组（用于存放饼图的类别）
+                var backend_data = [];
+                var last_time = [];
+                var db_name = {{ db_name|tojson }};
+                var time_range = {{ time_range|tojson }};
+                $.ajax({
+                    type: 'POST',
+                    data:{"db_name":db_name,"limit_ends":time_range},
+                    url: '{{ url_for('echarts_ajax_more') }}',//请求数据的地址
+                    dataType: "json",        //返回数据形式为json
+                    success:function(result){
+
+                        var Item = function(){
+                            return {
+                                name:'',
+                                type:'line',
+                                data:[]
+                                }
+                            };
+                        var legends = [];
+                        var Series = [];
+                        var json = result.list;
+                        for(var i=0;i < json.length;i++){
+                            var it = new Item();
+                            it.name = json[i].department;
+                            legends.push(json[i].department);
+                            it.data = json[i].num;
+                            Series.push(it);
+                        }
+                        //Privated Area Start
+                        // threads Modify Start
+                        threads.showLoading();   //显示加载动画
+                        threadsOption = optionPublic;
+                        threadsOption.xAxis[0].data = result.last_time;
+                        threadsOption.legend.data = legends.slice(0,4);
+                        threadsOption.series = Series.slice(0,4); // 设置图表
+                        threads.hideLoading();    //隐藏加载动画
+                        threads.setOption(threadsOption);// 重新加载图表
+                        // threads End
+                        // qpsTps Modify Start
+                        qpstps_echarts.showLoading();   //显示加载动画
+                        qpstpsOption = optionPublic;
+                        qpstpsOption.xAxis[0].data = result.last_time;
+                        qpstpsOption.legend.data = legends.slice(4,6);
+                        qpstpsOption.series = Series.slice(4,6); // 设置图表
+                        qpstps_echarts.hideLoading();    //隐藏加载动画
+                        qpstps_echarts.setOption(qpstpsOption);// 重新加载图表
+                        //qpsTps End
+                        // dmlPersecond Modify Start
+                        dmlPersecond.showLoading();   //显示加载动画
+                        dmlPersecondOption = optionPublic;
+                        dmlPersecondOption.xAxis[0].data = result.last_time;
+                        dmlPersecondOption.legend.data = legends.slice(6,10);
+                        dmlPersecondOption.series = Series.slice(6,10); // 设置图表
+                        dmlPersecond.hideLoading();    //隐藏加载动画
+                        dmlPersecond.setOption(dmlPersecondOption);// 重新加载图表
+                        //qpsTps End
+                        // transactionPersecond Modify Start
+                        transactionPersecond.showLoading();   //显示加载动画
+                        tpsPersecondOption = optionPublic;
+                        tpsPersecondOption.xAxis[0].data = result.last_time;
+                        tpsPersecondOption.legend.data = legends.slice(10,12);
+                        tpsPersecondOption.series = Series.slice(10,12); // 设置图表
+                        transactionPersecond.hideLoading();    //隐藏加载动画
+                        transactionPersecond.setOption(tpsPersecondOption);// 重新加载图表
+                        //transactionPersecond End
+                        // tempPersecond Modify Start
+                        tempPersecond.showLoading();   //显示加载动画
+                        tempPersecondOption = optionPublic;
+                        tempPersecondOption.xAxis[0].data = result.last_time;
+                        tempPersecondOption.legend.data = legends.slice(12,15);
+                        tempPersecondOption.series = Series.slice(12,15); // 设置图表
+                        tempPersecond.hideLoading();    //隐藏加载动画
+                        tempPersecond.setOption(tempPersecondOption);// 重新加载图表
+                        //tempPersecond End
+                        // networkPersecond Modify Start
+                        networkPersecond.showLoading();   //显示加载动画
+                        networkPersecondOption = optionPublic;
+                        networkPersecondOption.xAxis[0].data = result.last_time;
+                        networkPersecondOption.legend.data = legends.slice(15,18);
+                        networkPersecondOption.series = Series.slice(15,18); // 设置图表
+                        networkPersecond.hideLoading();    //隐藏加载动画
+                        networkPersecond.setOption(networkPersecondOption);// 重新加载图表
+                        // networkPersecond End
+                        // innodbRowsDmlPersecond Modify Start
+                        innodbRowsDmlPersecond.showLoading();   //显示加载动画
+                        innodbRowsPersecondOption = optionPublic;
+                        innodbRowsPersecondOption.xAxis[0].data = result.last_time;
+                        innodbRowsPersecondOption.legend.data = legends.slice(18,22);
+                        innodbRowsPersecondOption.series = Series.slice(18,22); // 设置图表
+                        innodbRowsDmlPersecond.hideLoading();    //隐藏加载动画
+                        innodbRowsDmlPersecond.setOption(innodbRowsPersecondOption);// 重新加载图表
+                        // innodbRowsDmlPersecond End
+                        // abortedEcharts Modify Start
+                        abortedEcharts.showLoading();   //显示加载动画
+                        abortedEchartsOption = optionPublic;
+                        abortedEchartsOption.xAxis[0].data = result.last_time;
+                        abortedEchartsOption.legend.data = legends.slice(22,24);
+                        abortedEchartsOption.series = Series.slice(22,24); // 设置图表
+                        abortedEcharts.hideLoading();    //隐藏加载动画
+                        abortedEcharts.setOption(abortedEchartsOption);// 重新加载图表
+                        // abortedEcharts End
+                        // normalRateEcharts Modify Start
+                        normalRateEcharts.showLoading();   //显示加载动画
+                        normalRateEchartsOption = optionPublic;
+                        normalRateEchartsOption.xAxis[0].data = result.last_time;
+                        normalRateEchartsOption.legend.data = legends.slice(24,27);
+                        normalRateEchartsOption.series = Series.slice(24,27); // 设置图表
+                        normalRateEcharts.hideLoading();    //隐藏加载动画
+                        normalRateEcharts.setOption(normalRateEchartsOption);// 重新加载图表
+                        // normalRateEcharts End
+                        //Privated Area Modify Ends
+                    },
+                    error: function (errorMsg) {
+                        //请求失败时执行该函数
+                        alert("线状图图表请求数据失败!");
+                        connectionPool.hideLoading();
+                    }
+                });
+            };
+            loadOneColumn();
+            loadMoreColumn();
+            </script>
+            {% elif sub_title =="复制延迟" %}
+                <div class="row-fluid">
+                    <div class="box">
+                        <div class="box-header">
+                            <h2><i class="halflings-icon white list-alt"></i><span class="break"></span>{{ db_name }}{{ href_name }}</h2>
+                            <div class="box-icon">
+
+                                <a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+                                <a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+                            </div>
+                        </div>
+                        <div class="box-content">
+                            <div id="replicationEcharts"  class="center" style="height:300px;" ></div>
+                        </div>
+                    </div>
+                </div>
+                <script src="http://echarts.baidu.com/build/dist/echarts-all.js"></script>
+                <script type="text/javascript">
+                function loadMoreColumn() {
+                    var replicationEcharts = echarts.init(document.getElementById('replicationEcharts'));
+                    // 显示标题，图例和空的坐标轴
+                    //公共option定义
+                    optionPublic={
+                        tooltip : {
+                            trigger: 'axis'
+                        },
+                        legend: {
+                            data:[]
+                        },
+                        toolbox: {
+                            show : true,
+                            feature : {
+                                //mark : {show: true},
+                                //dataView : {show: true, readOnly: false},
+                                magicType : {show: true, type: ['line', 'bar']},
+                                restore : {show: true},
+                                saveAsImage : {show: true}
+                            }
+                        },
+                        calculable : true,
+                        xAxis : [
+                            {
+                                type : 'category',
+                                boundaryGap : false,
+                                data :  []
+                            }
+                        ],
+                        yAxis : [
+                            {
+                                type : 'value'
+                            }
+                        ],
+                        series : []
+                    };
+                    //optionPublic 公用optionPublic ends
+                    var names = [];    //类别数组（用于存放饼图的类别）
+                    var backend_data = [];
+                    var last_time = [];
+                    var db_name = {{ db_name|tojson }};
+                    var time_range = {{ time_range|tojson }}
+                    $.ajax({
+                        type: 'POST',
+                        data:{"db_name":db_name,"limit_ends":time_range},
+                        url: '{{ url_for('replication_echarts_ajax') }}',//请求数据的地址
+                        dataType: "json",        //返回数据形式为json
+                        success:function(result){
+
+                            var Item = function(){
+                                return {
+                                    name:'',
+                                    type:'line',
+                                    data:[]
+                                    }
+                                };
+                            var legends = [];
+                            var Series = [];
+                            var json = result.list;
+                            for(var i=0;i < json.length;i++){
+                                var it = new Item();
+                                it.name = json[i].department;
+                                legends.push(json[i].department);
+                                it.data = json[i].num;
+                                Series.push(it);
+                            }
+                            //Privated Area Start
+                            // replicationEcharts Modify Start
+                            replicationEcharts.showLoading();   //显示加载动画
+                            replicationEchartsOption = optionPublic;
+                            replicationEchartsOption.xAxis[0].data = result.last_time;
+                            replicationEchartsOption.legend.data = legends;
+                            replicationEchartsOption.series = Series; // 设置图表
+                            replicationEcharts.hideLoading();    //隐藏加载动画
+                            replicationEcharts.setOption(replicationEchartsOption);// 重新加载图表
+                            // replicationEcharts End
+                            //Privated Area Modify Ends
+                        },
+                        error: function (errorMsg) {
+                            //请求失败时执行该函数
+                            alert("图表请求数据失败!");
+                            //replicationEcharts.hideLoading();
+                        }
+                    });
+                };
+                loadMoreColumn();
+                </script>
+            {% endif %}
+{% endblock %}

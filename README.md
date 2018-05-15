@@ -16,7 +16,8 @@ Thinkdb是一款由PYTHON开发的MySQL DBA维护和监控MySQL数据库的软�
 ## 视图模块需要更改的地方
   1、消息组件 需要更改views.py中 dml视图的 收件人group_id 根据实际情况填写DBA团队的ID。<br>
   2、views.py中Inception的连接配置块根据实际情况填写IP,端口，用户，密码等信息。
-  
+  3、监控脚本monitor/monitor.py文件里面，需要根据实际情况更改监控历史数据存放信息
+  
 ## 数据库账户权限
   1、监控账户必须要具有process,replication slave,replication client权限
 

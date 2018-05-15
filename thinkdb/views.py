@@ -5,7 +5,7 @@ from flask_login import login_user,logout_user,login_required,LoginManager,curre
 from thinkdb import app,login_manager,db,socketio,emit
 from thinkdb.models import *
 from thinkdb.forms import *
-import datetime,random,time,asyncio,hashlib,os,psutil,json
+import datetime,random,time,asyncio,hashlib,os,json
 from threading import Lock
 ####以下是为了服务端命令结果
 

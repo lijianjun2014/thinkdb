@@ -17,7 +17,10 @@ Thinkdb是一款由PYTHON开发的MySQL DBA维护和监控MySQL数据库的软�
   1、消息组件 需要更改views.py中 dml视图的 收件人group_id 根据实际情况填写DBA团队的ID。<br>
   2、views.py中Inception的连接配置块根据实际情况填写IP,端口，用户，密码等信息。
   
-  
+## 数据库账户权限
+  1、监控账户必须要具有process,replication slave,replication client权限
+
+
 ## Python3使用Inception需要修改的地方：
   1、如果按照正确格式书写后还是报错：2576, 'Must start as begin statement。解决方案：<br>
     修改pymysql的cursor.py,找到"if not self._defer_warnings"，大概在338行将self._show_warnings()这一句注释掉，也可以直接删除，换成pass。

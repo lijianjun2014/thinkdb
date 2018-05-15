@@ -40,3 +40,9 @@ Thinkdb是一款由PYTHON开发的MySQL DBA维护和监控MySQL数据库的软�
 + elif int(self.server_version.split('.', 1)[0]) >= 5:
 +    self.client_flag |= CLIENT.MULTI_RESULTS
 ```
+# 项目介绍
+## 登录
+![login](https://github.com/lijianjun2014/thinkdb/blob/master/img/login.png "登录")
+## 用户中心
+  用户中心包含了用户组和具体的用户，用户组方便权限管理，后期会增加权限管理！
+![login](https://github.com/lijianjun2014/thinkdb/blob/master/img/usercenter.png "用户中心")

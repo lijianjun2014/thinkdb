@@ -14,12 +14,12 @@ Thinkdb是一款由PYTHON开发的MySQL DBA维护和监控MySQL数据库的软�
 
 # 使用说明
 ## 视图模块需要更改的地方
-  1、消息组件 需要更改views.py中 dml视图的 收件人group_id 根据实际情况填写DBA团队的ID。<br>
-  2、views.py中Inception的连接配置块根据实际情况填写IP,端口，用户，密码等信息。
-  3、监控脚本monitor/monitor.py文件里面，需要根据实际情况更改监控历史数据存放信息
+    1. 消息组件 需要更改views.py中 dml视图的 收件人group_id 根据实际情况填写DBA团队的ID。<br>
+    2. views.py中Inception的连接配置块根据实际情况填写IP,端口，用户，密码等信息。
+    3. 监控脚本monitor/monitor.py文件里面，需要根据实际情况更改监控历史数据存放信息
   
 ## 数据库账户权限
-  1、监控账户必须要具有process,replication slave,replication client权限
+    1. 监控账户必须要具有process,replication slave,replication client权限
 
 
 ## Python3使用Inception需要修改的地方：
@@ -49,9 +49,9 @@ Thinkdb是一款由PYTHON开发的MySQL DBA维护和监控MySQL数据库的软�
 ## 登录
 ![login](https://github.com/lijianjun2014/thinkdb/blob/master/img/login.png "登录")
 ## 用户中心
-  用户中心包含了用户组和具体的用户，用户组方便权限管理，后期会增加权限管理！
-  用户列表支持搜索，搜索由bootstrapJS自带的。
-  列表的Action支持用户快捷的 增加 修改 删除操作
+    用户中心包含了用户组和具体的用户，用户组方便权限管理，后期会增加权限管理！
+    用户列表支持搜索，搜索由bootstrapJS自带的。
+    列表的Action支持用户快捷的 增加 修改 删除操作
 ![UserCenter](https://github.com/lijianjun2014/thinkdb/blob/master/img/usercenter.png "用户中心")
   新增用户
 ![AddUser](https://github.com/lijianjun2014/thinkdb/blob/master/img/add_user.png "新增用户")
@@ -71,7 +71,7 @@ Thinkdb是一款由PYTHON开发的MySQL DBA维护和监控MySQL数据库的软�
 ![](https://github.com/lijianjun2014/thinkdb/blob/master/img/echarts3.png "监控图表") 
 ![](https://github.com/lijianjun2014/thinkdb/blob/master/img/echarts4.png "监控图表") 
   慢查询信息
-  慢查询是由pt工具生成，这列只做展示用
+  慢查询是由借助pt工具生成并存入数据库中，这里前端展示
 ![](https://github.com/lijianjun2014/thinkdb/blob/master/img/slow_query.png "慢查询")
 ## 工单模块
   工单模块支持DML，DDL的提交，由DBA审核，后期会加入由直系上级先审核，最后由DBA审核并执行，底层功能是由inception实现

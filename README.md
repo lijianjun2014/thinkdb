@@ -75,3 +75,6 @@ Thinkdb是一款由PYTHON开发的MySQL DBA维护和监控MySQL数据库的软�
 ![](https://github.com/lijianjun2014/thinkdb/blob/master/img/tickets_submit.png "工单")
   工单审核与执行，检测通过了才会出现执行按钮
 ![](https://github.com/lijianjun2014/thinkdb/blob/master/img/tickets_modify.png "工单")
+## 消息模块
+  工单变更或者需要有你需要审核与介入的工单会发消息给你，目前只实现了消息，后期这里会加入邮件功能。
+![](https://github.com/lijianjun2014/thinkdb/blob/master/img/message.png "消息模块")

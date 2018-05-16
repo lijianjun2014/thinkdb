@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50554
 File Encoding         : 65001
 
-Date: 2018-05-15 17:15:05
+Date: 2018-05-16 08:36:44
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -32,6 +32,10 @@ CREATE TABLE `admin_log` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
+-- Records of admin_log
+-- ----------------------------
+
+-- ----------------------------
 -- Table structure for data_center
 -- ----------------------------
 DROP TABLE IF EXISTS `data_center`;
@@ -44,6 +48,14 @@ CREATE TABLE `data_center` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of data_center
+-- ----------------------------
+INSERT INTO `data_center` VALUES ('1', '内网测试环境', '内网测试环境', '2018-04-19 09:35:29', '2018-04-19 09:35:29');
+INSERT INTO `data_center` VALUES ('2', '上海数据中心', '上海张江机房', '2018-04-19 09:35:47', '2018-04-19 09:35:47');
+INSERT INTO `data_center` VALUES ('3', '深圳数据中心', '深圳机房', '2018-04-19 09:36:00', '2018-04-19 09:36:00');
+INSERT INTO `data_center` VALUES ('4', '成都数据中心', '成都本地数据中心', '2018-05-13 11:14:14', '2018-05-15 12:58:01');
 
 -- ----------------------------
 -- Table structure for db_cluster
@@ -63,6 +75,15 @@ CREATE TABLE `db_cluster` (
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
+-- Records of db_cluster
+-- ----------------------------
+INSERT INTO `db_cluster` VALUES ('1', '老测数据库', 'online', '测试用户组——变更', '测试申请人1', '2018-04-19 09:36:32', '2018-05-15 13:27:44');
+INSERT INTO `db_cluster` VALUES ('2', 'In_Test', 'online', '内网测试集群1', '测试申请人1', '2018-05-09 09:22:20', '2018-05-09 09:22:20');
+INSERT INTO `db_cluster` VALUES ('3', 'Real_Online_DBS', 'online', '线上数据库集群', '李建军', '2018-05-15 10:53:49', '2018-05-15 10:53:49');
+INSERT INTO `db_cluster` VALUES ('4', 'New_Test_DB', 'online', '新测数据库', '测试申请人1', '2018-05-15 13:10:52', '2018-05-15 13:13:52');
+INSERT INTO `db_cluster` VALUES ('5', '本地虚拟机', 'online', '本地虚拟机', '测试申请人1', '2018-05-15 14:32:51', '2018-05-15 14:32:51');
+
+-- ----------------------------
 -- Table structure for messages
 -- ----------------------------
 DROP TABLE IF EXISTS `messages`;
@@ -78,7 +99,12 @@ CREATE TABLE `messages` (
   PRIMARY KEY (`id`),
   KEY `ix_messages_sender` (`sender`),
   KEY `ix_messages_recipient` (`recipient`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of messages
+-- ----------------------------
+
 
 -- ----------------------------
 -- Table structure for mysql_databases
@@ -112,6 +138,10 @@ CREATE TABLE `mysql_databases` (
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
+-- Records of mysql_databases
+-- ----------------------------
+
+-- ----------------------------
 -- Table structure for mysql_replication
 -- ----------------------------
 DROP TABLE IF EXISTS `mysql_replication`;
@@ -138,6 +168,10 @@ CREATE TABLE `mysql_replication` (
   KEY `ix_mysql_replication_master_host` (`master_host`),
   KEY `ix_mysql_replication_ip` (`ip`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of mysql_replication
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for mysql_replication_history
@@ -167,7 +201,11 @@ CREATE TABLE `mysql_replication_history` (
   KEY `ix_mysql_replication_history_ip` (`ip`),
   KEY `ix_mysql_replication_history_db_name` (`db_name`),
   KEY `ix_mysql_replication_history_mysql_replication_id` (`mysql_replication_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=652 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3004 DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of mysql_replication_history
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for mysql_slow_query_review
@@ -186,6 +224,10 @@ CREATE TABLE `mysql_slow_query_review` (
   KEY `idx_checksum` (`checksum`) USING BTREE,
   KEY `idx_last_seen` (`last_seen`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of mysql_slow_query_review
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for mysql_slow_query_review_history
@@ -295,6 +337,10 @@ CREATE TABLE `mysql_slow_query_review_history` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
+-- Records of mysql_slow_query_review_history
+-- ----------------------------
+
+-- ----------------------------
 -- Table structure for mysql_status
 -- ----------------------------
 DROP TABLE IF EXISTS `mysql_status`;
@@ -370,6 +416,10 @@ CREATE TABLE `mysql_status` (
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
+-- Records of mysql_status
+-- ----------------------------
+
+-- ----------------------------
 -- Table structure for mysql_status_history
 -- ----------------------------
 DROP TABLE IF EXISTS `mysql_status_history`;
@@ -442,7 +492,11 @@ CREATE TABLE `mysql_status_history` (
   KEY `ix_mysql_status_history_db_cluster_name` (`db_cluster_name`),
   KEY `ix_mysql_status_history_data_center_name` (`data_center_name`),
   KEY `idx_db_name_last_time` (`db_name`,`last_modify_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=1472 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=6960 DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of mysql_status_history
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for tickets
@@ -469,7 +523,11 @@ CREATE TABLE `tickets` (
   KEY `ix_tickets_add_time` (`add_time`),
   KEY `ix_tickets_applicant` (`applicant`),
   CONSTRAINT `tickets_ibfk_1` FOREIGN KEY (`db_id`) REFERENCES `mysql_databases` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of tickets
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for users
@@ -493,7 +551,12 @@ CREATE TABLE `users` (
   KEY `ix_users_status` (`status`),
   KEY `ix_users_real_name` (`real_name`),
   CONSTRAINT `users_ibfk_1` FOREIGN KEY (`group_id`) REFERENCES `user_group` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of users
+-- ----------------------------
+INSERT INTO `users` VALUES ('1', 'admin', 'md5$RXakgssJ$dc890e59a577b723e360ece485ab3bb5', 'admin', 'admin@thinkdb.com', '正常', '1', '', '2018-04-19 09:32:10', '2018-05-16 08:35:55');
 
 -- ----------------------------
 -- Table structure for user_group
@@ -508,3 +571,10 @@ CREATE TABLE `user_group` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `group_name` (`group_name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of user_group
+-- ----------------------------
+INSERT INTO `user_group` VALUES ('1', 'Super_DBA', '高级DBA', '2018-04-19 09:31:32', '2018-04-19 09:39:47');
+INSERT INTO `user_group` VALUES ('2', 'Intern_DBA', '实习DBA', '2018-04-19 09:39:23', '2018-04-19 09:39:54');
+INSERT INTO `user_group` VALUES ('3', '测试组1', '测试用户组——变更', '2018-04-25 14:24:00', '2018-04-25 14:24:00');

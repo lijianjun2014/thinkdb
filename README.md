@@ -41,9 +41,9 @@ Thinkdb是一款由PYTHON开发的MySQL DBA维护和监控MySQL数据库的软�
 +    self.client_flag |= CLIENT.MULTI_RESULTS
 ```
 ## 使用方法
-  1. 自行完成相关的PYTHON网页运行所需环境，推荐UWSGI NGINX。
-  2. 导入SQL文件夹中的SQL文件，初始化数据库。
-  3. 初始用户：admin(密码：admin888)
+    1. 自行完成相关的PYTHON网页运行所需环境，推荐UWSGI NGINX。
+    2. 导入SQL文件夹中的SQL文件，初始化数据库。
+    3. 初始用户：admin(密码：admin888)
   
 # 项目介绍
 ## 登录

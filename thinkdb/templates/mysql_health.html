@@ -66,13 +66,21 @@
                                     <span class="label label-important" title data-rel="tooltip"   data-original-title="独立主机">Alone</span>
                                     {% endif %}
 								</td>
-                                <td class="center">{{d.version[0:6]}}</td>
-                                <td class="center">{{d.threads_connected}}</td>
-                                <td class="center">{{ d.threads_running }}</td>
-								<td class="center">{{d.questions_persecond}}</td>
-                                <td class="center">{{d.transaction_persecond}}</td>
-                                <td class="center">{{d.last_modify_time}}</td>
-
+                                {% if d.version == '' %}
+                                    <td class="center">{{d.version}}</td>
+                                    <td class="center">-</td>
+                                    <td class="center">-</td>
+                                    <td class="center">-</td>
+                                    <td class="center">-</td>
+                                    <td class="center">-</td>
+                                {% else %}
+                                    <td class="center">{{d.version}}</td>
+                                    <td class="center">{{d.threads_connected}}</td>
+                                    <td class="center">{{ d.threads_running }}</td>
+                                    <td class="center">{{d.questions_persecond}}</td>
+                                    <td class="center">{{d.transaction_persecond}}</td>
+                                    <td class="center">{{d.last_modify_time}}</td>
+                                {% endif %}
 								<td class="center">
 									<a class="label label-success" href="{{ url_for('health_echarts',db_name = d.db_name) }}" title data-rel="tooltip"   data-original-title="查看图表" target ="_blank">
 										<i class="halflings-icon white zoom-in"></i>

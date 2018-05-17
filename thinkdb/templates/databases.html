@@ -157,33 +157,41 @@
 							<tr>
 								<td class="center">{{d.id}}</td>
 								<td class="center">{{d.name}}</td>
-                                <td class="center">{{d.data_center_name}}</td>
-								<td class="center">{{d.db_cluster_name}}</td>
+                                <td class="center">{{d.datacenter_name}}</td>
+								<td class="center">{{d.cluster_name}}</td>
                                 <td class="center">{{d.version}}</td>
 								<td class="center">{{d.ip}}</td>
 								<td class="center">{{d.port}}</td>
 
 								<td class="center">
-                                    {% if d.is_master == 1 and d.is_slave == 0 %}
-									<span class="label label-success" title data-rel="tooltip"   data-original-title="主库">Master</span>
-                                    {% elif d.is_master == 0 and d.is_slave == 1 %}
-                                    <span class="label label-warning" title data-rel="tooltip"   data-original-title="从库">Slave</span>
-                                    {% elif d.is_master == 1 and d.is_slave == 1 %}
-                                    <span class="label label-important" title data-rel="tooltip"   data-original-title="独立主机">Cascade</span>
+                                    {% if d.is_monitor == 1 %}
+                                        {% if d.is_master == 1 and d.is_slave == 0 %}
+                                        <span class="label label-success" title data-rel="tooltip"   data-original-title="主库">Master</span>
+                                        {% elif d.is_master == 0 and d.is_slave == 1 %}
+                                        <span class="label label-warning" title data-rel="tooltip"   data-original-title="从库">Slave</span>
+                                        {% elif d.is_master == 1 and d.is_slave == 1 %}
+                                        <span class="label label-important" title data-rel="tooltip"   data-original-title="级联主库">Cascade</span>
+                                        {% else %}
+                                        <span class="label label-important" title data-rel="tooltip"   data-original-title="独立主机">Alone</span>
+                                        {% endif %}
                                     {% else %}
-                                    <span class="label label-important" title data-rel="tooltip"   data-original-title="独立主机">Alone</span>
+                                        <span class="label label-info" title data-rel="tooltip"   data-original-title="未启用监控">未知</span>
                                     {% endif %}
 								</td>
                                 <td class="center">
 									{{ d.master_host }}
 								</td>
 								<td class="center">
-                                    {% if d.status == "active" %}
-									<span class="label label-success" title data-rel="tooltip"   data-original-title="在线">Active</span>
-                                    {% elif d.status == "inactive" %}
-                                        <span class="label" title data-rel="tooltip"   data-original-title="下线">Down</span>
-									{% else %}
-										<span class="label" title data-rel="tooltip"   data-original-title="未知">Unknown</span>
+                                    {% if d.is_monitor == 1 %}
+                                        {% if d.status == "active" %}
+                                        <span class="label label-success" title data-rel="tooltip"   data-original-title="在线">Active</span>
+                                        {% elif d.status == "inactive" %}
+                                            <span class="label" title data-rel="tooltip"   data-original-title="下线">Down</span>
+                                        {% else %}
+                                            <span class="label" title data-rel="tooltip"   data-original-title="未知">Unknown</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="label label-info" title data-rel="tooltip"   data-original-title="未启用监控">未知</span>
                                     {% endif %}
 								</td>
                                 <td class="center">{{d.add_time.strftime('%Y-%m-%d')}}</td>

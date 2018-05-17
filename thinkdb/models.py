@@ -322,6 +322,25 @@ class Admin_Log(db.Model):
     last_modify_time = db.Column(db.DateTime,default=datetime.now,onupdate=True,index=True,comment="最后更新时间")
     def __repr__(self):
         return '<Admin_Log %r>' % (self.username)
+#全局配置
+class Options(db.Model):
+    __tablename__ = "options"
+    id = db.Column(db.SmallInteger,primary_key=True,autoincrement=True,comment="配置主键ID")
+    site_name = db.Column(db.String(32),nullable=False,default='',server_default='',comment="站点名称")
+    monitor_frequency = db.Column(db.SmallInteger,nullable=False,default='1',server_default='1',comment="监控频率分钟")
+    email_on = db.Column(db.SmallInteger,nullable=False,default='1',server_default='1',comment="是否开启邮件报警")
+    email_times = db.Column(db.SmallInteger,nullable=False,default='3',server_default='3',comment="邮件发送次数")
+    email_sleep = db.Column(db.SmallInteger,nullable=False,default='30',server_default='30',comment="邮件报警达到次数后，休眠时间")
+    receiver = db.Column(db.String(256),nullable=False,default='',server_default='',comment="邮件报警收件人地址;分号分割")
+    smtp_host = db.Column(db.String(20),nullable=False,default='',server_default='',comment="SMTP主机")
+    smtp_port = db.Column(db.String(20), nullable=False, default='', server_default='', comment="SMTP主机端口")
+    smtp_user = db.Column(db.String(20), nullable=False, default='', server_default='', comment="SMTP账户")
+    smtp_password = db.Column(db.String(32), nullable=False, default='', server_default='', comment="SMTP密码")
+    add_time = db.Column(db.DateTime, default=datetime.now, index=True, comment="添加时间")
+    last_modify_time = db.Column(db.DateTime, default=datetime.now, onupdate=True, index=True, comment="最后更新时间")
+    def __repr__(self):
+        return '<Option %r>' % (self.option_name)
+
 if __name__ == '__main__':
     db.create_all()
 

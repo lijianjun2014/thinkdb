@@ -13,7 +13,7 @@ config = {
     'port': 3306,
     'user': 'thinkdb',
     'password': '123456',
-    'db': 'fthinkdb',
+    'db': 'thinkdb',
     'charset': 'utf8mb4',
     #'cursorclass': pymysql.cursors.DictCursor,
     }
@@ -46,14 +46,14 @@ def mysql_query(ip,port,username,password,db_name,sql_content,paras):
         return result
 
 def thinkdb_update(sql_content,paras):
-    with mysql(db_name="fthinkdb") as cursor:
+    with mysql(db_name="thinkdb") as cursor:
         if paras != '':
             cursor.execute(sql_content,paras)
         else:
             cursor.execute(sql_content)
 #监控数据存放库的查询
 def thinkdb_query(sql_content,paras):
-    with mysql(db_name="fthinkdb") as cursor:
+    with mysql(db_name="thinkdb") as cursor:
         if paras != '':
             row_count = cursor.execute(sql_content,paras)
         else:
@@ -228,7 +228,7 @@ def insert_status_history_data():
     sql_content = "insert into mysql_replication_history select '',A.* from mysql_replication A;"
     thinkdb_update(sql_content,'')
 def main():
-    servers = mysql_query('127.0.0.1','3306','thinkdb','123456','fthinkdb',"select name,ip,port,db_user,db_password from mysql_databases where is_monitor = %s;",1)
+    servers = mysql_query('127.0.0.1','3306','thinkdb','123456','thinkdb',"select name,ip,port,db_user,db_password from mysql_databases where is_monitor = %s;",1)
     processlist=[]
     monitor_start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     if servers:

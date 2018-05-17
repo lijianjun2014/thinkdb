@@ -1,26 +1,49 @@
 README
 ====
-Thinkdb是一款由PYTHON开发的MySQL DBA维护和监控MySQL数据库的软件。<br>
-目前完成了语句审核,工单模块,状态监控,复制监控，语句审核由去哪儿开源的Inception提供功能。<br>
-后期计划陆续添加权限鉴别，数据库实例的上下线，上线自动添加与判断实例，网页端维护等功能。<br>
-如果在使用中有遇到任何问题，请与作者联系！同时由于这是一款业也许时间完成的运维平台，难免会有一些小瑕疵，请大家见谅！但我会尽最大努力持续维护。
+Thinkdb现在处于开发中是一个雏形，很多功能暂未实现，当然也暂时未实现脚本自动化安装与部署。<br>
+如果您需要试用可以参照以下步骤来完成安装与上线。具体由于服务器平台与版本不一致，可能会有差异！<br>
 ****
 
-|Author|Li JianJun|
-|---|---
-|QQ群|　　7273702|
-|E-mail|33359848@qq.com
+# ThinkDB安装流程
+## ThinkDB程序下载
+    1. git clone https://github.com/lijianjun2014/thinkdb.git
+    2. cd thinkdb && mkdir /usr/local/thinkdb && cp -r {config.py,main.py,requirement,monitor/,uwsgi_conf/} /usr/local/thinkdb/
+    3. views.py中Inception的连接配置块根据实际情况填写IP,端口，用户，密码等信息。
+    4. 监控脚本monitor/monitor.py文件里面，需要根据实际情况更改监控历史数据存放信息
 
-
-# 使用说明
-## 视图模块需要更改的地方
-    1. 消息组件 需要更改views.py中 dml视图的 收件人group_id 根据实际情况填写DBA团队的ID。<br>
-    2. views.py中Inception的连接配置块根据实际情况填写IP,端口，用户，密码等信息。
-    3. 监控脚本monitor/monitor.py文件里面，需要根据实际情况更改监控历史数据存放信息
   
-## 数据库账户权限
-    1. 监控账户必须要具有process,replication slave,replication client权限
+## Nginx安装
+    1. 下载nginx安装包：wget http://nginx.org/download/nginx-1.10.3.tar.gz
+    2. 解压:   tar -zxf nginx-1.10.3.tar.gz
+    3. 编译:   cd nginx-1.10.3 && ./configure --prefix=/usr/local/nginx
+    4. 安装：  make && make install
 
+## Python升级
+    1. 下载并解压好Python3.6,进入目录
+    2. 编译:   ./configure --prefix=/usr/local/python3.6
+    3. 安装:   make && make install
+    4. 移动服务器自带的python版本：  mv /usr/bin/python /usr/bin/python_old
+    5. 添加软链:    ln -s /usr/local/python3.6/bin/python3.6 /usr/bin/python
+    6. 编辑/etc/profile：    echo "PATH=$PATH:/usr/local/python3.6/bin" >>/etc/profile  && source /etc/profile
+    7. 修改yum文件，防止python升级导致Yum 命令失效：
+       vim /usr/bin/yum
+       ```diff
+       - #!/usr/bin/python
+       + #!/usr/bin/python_old
+       ```
+## 安装虚拟环境和依赖包
+    1. 安装virtualenv:        /usr/local/python3.6/bin/pip3.6 install virtualenv
+    2. 创建Thinkdb虚拟环境：      /usr/local/python3.6/bin/virtualenv /usr/local/thinkdb/venv
+    3. 激活thinkdb虚拟环境:   source /usr/local/thinkdb/venv/bin/activate
+    4. 安装thinkdb所需依赖：  pip install -r /usr/local/thinkdb/requirement
+
+## 运行nginx
+    1. 从thinkdb包下面的nginx_conf文件夹拷贝nginx.conf到/usr/local/nginx/conf/nginx.conf
+    2. /usr/local/nginx/sbin/nginx    如报错请百度解决nginx报错
+    3. 启动uwsgi:   /usr/local/thinkdb/venv/bin/uwsgi --ini /usr/local/thinkdb/uwsgi_conf/uwsgi.conf &
+## 导入数据与表结构：
+    登录数据库，创建thinkdb数据库，导入thinkdb中sql文件夹下的数据。
+    现在用admin/admin888 来查看效果吧。
 
 ## Python3使用Inception需要修改的地方：
   1、如果按照正确格式书写后还是报错：2576, 'Must start as begin statement。解决方案：<br>
@@ -40,46 +63,3 @@ Thinkdb是一款由PYTHON开发的MySQL DBA维护和监控MySQL数据库的软�
 + elif int(self.server_version.split('.', 1)[0]) >= 5:
 +    self.client_flag |= CLIENT.MULTI_RESULTS
 ```
-## 使用方法
-    1. 自行完成相关的PYTHON网页运行所需环境，推荐UWSGI NGINX。
-    2. 导入SQL文件夹中的SQL文件，初始化数据库。
-    3. 初始用户：admin(密码：admin888)
-  
-# 项目介绍
-## 登录
-![login](https://github.com/lijianjun2014/thinkdb/blob/master/img/login.png "登录")
-## 用户中心
-    用户中心包含了用户组和具体的用户，用户组方便权限管理，后期会增加权限管理！
-    用户列表支持搜索，搜索由bootstrapJS自带的。
-    列表的Action支持用户快捷的 增加 修改 删除操作
-![UserCenter](https://github.com/lijianjun2014/thinkdb/blob/master/img/usercenter.png "用户中心")
-  新增用户
-![AddUser](https://github.com/lijianjun2014/thinkdb/blob/master/img/add_user.png "新增用户")
-## 数据库中心
-  数据中心包含了数据中心，集群中心，具体的数据库服务器3个维度，能满足大多数的功能需求。
-![](https://github.com/lijianjun2014/thinkdb/blob/master/img/dbcenter.png "数据中心")
-  更改集群信息，后期陆续会加上集群的自动上下线功能
-![](https://github.com/lijianjun2014/thinkdb/blob/master/img/change_cluster.png "数据中心")
-## 监控中心
-  健康监控
-![](https://github.com/lijianjun2014/thinkdb/blob/master/img/health_monitor.png "健康监控")
-  复制监控
-![](https://github.com/lijianjun2014/thinkdb/blob/master/img/replication_monitor.png "复制监控")
-  监控图表
-![](https://github.com/lijianjun2014/thinkdb/blob/master/img/echarts1.png "监控图表") 
-![](https://github.com/lijianjun2014/thinkdb/blob/master/img/echarts2.png "监控图表") 
-![](https://github.com/lijianjun2014/thinkdb/blob/master/img/echarts3.png "监控图表") 
-![](https://github.com/lijianjun2014/thinkdb/blob/master/img/echarts4.png "监控图表") 
-  慢查询信息
-  慢查询是由借助pt工具生成并存入数据库中，这里前端展示
-![](https://github.com/lijianjun2014/thinkdb/blob/master/img/slow_query.png "慢查询")
-## 工单模块
-  工单模块支持DML，DDL的提交，由DBA审核，后期会加入由直系上级先审核，最后由DBA审核并执行，底层功能是由inception实现
-![](https://github.com/lijianjun2014/thinkdb/blob/master/img/tickets.png "工单")
-  工单提交，语法错误高亮显示
-![](https://github.com/lijianjun2014/thinkdb/blob/master/img/tickets_submit.png "工单")
-  工单审核与执行，检测通过了才会出现执行按钮
-![](https://github.com/lijianjun2014/thinkdb/blob/master/img/tickets_modify.png "工单")
-## 消息模块
-  工单变更或者需要有你需要审核与介入的工单会发消息给你，目前只实现了消息，后期这里会加入邮件功能。
-![](https://github.com/lijianjun2014/thinkdb/blob/master/img/message.png "消息模块")

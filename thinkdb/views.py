@@ -2,15 +2,13 @@ from sqlalchemy.sql import or_,and_
 from flask import render_template,request,url_for,redirect,session,flash,jsonify
 from werkzeug.security import check_password_hash,generate_password_hash
 from flask_login import login_user,logout_user,login_required,LoginManager,current_user
-from thinkdb import app,login_manager,db,socketio,emit
+from thinkdb import app,login_manager,db
 from thinkdb.models import *
 from thinkdb.forms import *
 import datetime,random,time,asyncio,hashlib,os,json
 from threading import Lock
 ####以下是为了服务端命令结果
 
-import paramiko
-###fabric###
 
 ###end##############
 # 数据库连接信息
@@ -19,7 +17,7 @@ config = {
     'port': 3306,
     'user': 'thinkdb',
     'password': '123456',
-    'db': 'fthinkdb',
+    'db': 'thinkdb',
     'charset': 'utf8mb4',
     'cursorclass': pymysql.cursors.DictCursor,
     }
@@ -39,7 +37,7 @@ config = {
     'port': 3306,
     'user': 'thinkdb',
     'password': '123456',
-    'db': 'fthinkdb',
+    'db': 'thinkdb',
     'charset': 'utf8mb4',
     'cursorclass': pymysql.cursors.DictCursor,
     }
@@ -49,11 +47,42 @@ config_ajax = {
     'port': 3306,
     'user': 'thinkdb',
     'password': '123456',
-    'db': 'fthinkdb',
+    'db': 'thinkdb',
     'charset': 'utf8mb4',
     'cursorclass': pymysql.cursors.DictCursor,
     }
 
+#########################登录注销模块################################
+#User Login Auth
+@app.route('/')
+def index():
+    if not current_user.is_anonymous:
+        if request.method == 'GET':
+            #return render_template('index.html',username=current_user.username,myuserid=current_user.id, messages=get_message(current_user.username))
+            return redirect(url_for('dbcenter'))
+    return redirect(url_for('login'))
+
+@app.route('/login/',methods=['GET','POST'])
+def login():
+    loginform = LoginForm()
+    if loginform.validate_on_submit():
+        user = User.query.filter_by(username=loginform.username.data).first()
+        if user is None:
+            flash("用户不存在.")
+            return render_template('login.html', form=loginform)
+        elif user is not None and check_password_hash(user.password,loginform.password.data):
+            if user.status != "正常":
+                flash("用户已过期或被锁定，请联系管理员")
+                return render_template('login.html', form=loginform)
+            else:
+                login_user(user,True)
+            return redirect(request.args.get('next') or url_for('index'))
+        flash("密码错误.")
+    return render_template('login.html',form=loginform)
+@app.route('/logout/')
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
 ##########################全局消息模块#################################
 #全局消息
 @login_required
@@ -96,37 +125,15 @@ def delmessage(messages_id):
         return redirect(url_for('messages_center'))
     else:
         return redirect(url_for('messages_center'))
-
-#User Login Auth
-@app.route('/')
-def index():
-    if not current_user.is_anonymous:
-        if request.method == 'GET':
-            #return render_template('index.html',username=current_user.username,myuserid=current_user.id, messages=get_message(current_user.username))
-            return redirect(url_for('dbcenter'))
-    return redirect(url_for('login'))
-
-@app.route('/login/',methods=['GET','POST'])
-def login():
-    loginform = LoginForm()
-    if loginform.validate_on_submit():
-        user = User.query.filter_by(username=loginform.username.data).first()
-        if user is None:
-            flash("用户不存在.")
-            return render_template('login.html', form=loginform)
-        elif user is not None and check_password_hash(user.password,loginform.password.data):
-            if user.status != "正常":
-                flash("用户已过期或被锁定，请联系管理员")
-                return render_template('login.html', form=loginform)
-            else:
-                login_user(user,True)
-            return redirect(request.args.get('next') or url_for('index'))
-        flash("密码错误.")
-    return render_template('login.html',form=loginform)
-@app.route('/logout/')
-def logout():
-    logout_user()
-    return redirect(url_for('login'))
+###################################站点配置##############################
+@login_required
+@app.route('/settings/',methods=['GET','POST'])
+def settings():
+    username = current_user.username
+    sub_title = "全局配置"
+    href_name = "全局配置"
+    newform = Settings()
+    return render_template('settings.html',sub_title=sub_title,href_name=href_name, objForm=newform,username=username, myuserid=current_user.id, messages=get_message(current_user.username))
 
 #用户管理中心
 @app.route('/usercenter/',methods=['GET','POST'])
@@ -140,7 +147,7 @@ def usercenter():
     else:
         return redirect(url_for('login'))
 #新增用户
-@app.route('/newuser',methods=['GET','POST'])
+@app.route('/newuser/',methods=['GET','POST'])
 @login_required
 def newuser():
     username = current_user.username

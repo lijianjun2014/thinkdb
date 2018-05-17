@@ -7,6 +7,18 @@ class LoginForm(FlaskForm):
     username = StringField('Username',validators=[DataRequired()])
     password = PasswordField('Password',validators=[DataRequired()])
 
+class Settings(FlaskForm):
+    sitename = StringField('sitename',render_kw={"placeholder": "站点名称"})
+    monitor_frequency = StringField('监控频率',validators=[DataRequired()],render_kw={"placeholder": "监控频率分钟"})
+    email_on = SelectField("是否开启邮件",choices=[('1','开启'),('0','关闭')])
+    email_times = StringField('发送邮件次数',validators=[DataRequired()],render_kw={"placeholder": "发送邮件次数"})
+    email_sleep = StringField('休眠时间',validators=[DataRequired()],render_kw={"placeholder": "发送邮件休眠次数"})
+    receiver = StringField('邮件接收地址',validators=[DataRequired()],render_kw={"placeholder": "邮件报警接收地址,多人用,分割"})
+    smtp_host = StringField('smtp_host',validators=[DataRequired()],render_kw={"placeholder": "SMTP服务器地址"})
+    smtp_port = StringField('smtp_port', validators=[DataRequired()], render_kw={"placeholder": "SMTP服务器端口"})
+    smtp_user = StringField('smtp_host', validators=[DataRequired()], render_kw={"placeholder": "SMTP服务器登录账户"})
+    smtp_password = StringField('smtp_host', validators=[DataRequired()], render_kw={"placeholder": "SMTP服务器登录密码"})
+
 class ChangeUserForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()],render_kw={"placeholder": "用户名"})
     password = StringField('Password',validators=[DataRequired(message="请输入密码")])

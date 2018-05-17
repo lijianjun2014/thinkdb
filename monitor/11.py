@@ -10,7 +10,7 @@ config = {
     'port': 3306,
     'user': 'thinkdb',
     'password': '123456',
-    'db': 'fthinkdb',
+    'db': 'thinkdb',
     'charset': 'utf8mb4',
     'cursorclass': pymysql.cursors.DictCursor,
     }

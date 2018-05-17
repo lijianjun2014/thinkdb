@@ -10,7 +10,11 @@ Thinkdb是一款由PYTHON开发的MySQL DBA维护和监控MySQL数据库的软�
 |---|---
 |QQ群|　　7273702|
 |E-mail|33359848@qq.com
+****
 
+# 安装文档
+![https://github.com/lijianjun2014/thinkdb/blob/master/doc/Install.md](https://github.com/lijianjun2014/thinkdb/blob/master/doc/Install.md "安装文档")
+****
 
 # 使用说明
 ## 视图模块需要更改的地方

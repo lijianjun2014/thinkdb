@@ -273,11 +273,11 @@ def dbcenter():
     href_name = "数据库管理中心"
     if username:
         db_type = Data_Center.query.all()
-        databases_info = db.session.query(MySQL_Databases.id,MySQL_Databases.status,MySQL_Databases.name,
-                                          MySQL_Status.data_center_name,MySQL_Status.db_cluster_name,
+        databases_info = db.session.query(MySQL_Databases.id,MySQL_Databases.status,MySQL_Databases.name,MySQL_Databases.is_monitor,
+                                          Data_Center.name.label("datacenter_name"),Db_Cluster.name.label("cluster_name"),
                                           MySQL_Databases.ip,MySQL_Databases.port, MySQL_Status.version, MySQL_Status.is_master,
                                           MySQL_Status.is_slave, MySQL_Databases.add_time,
-                                          MySQL_Replication.master_host).outerjoin(MySQL_Replication,MySQL_Databases.name == MySQL_Replication.db_name).outerjoin(MySQL_Status,MySQL_Status.db_name==MySQL_Databases.name).all()
+                                          MySQL_Replication.master_host).outerjoin(MySQL_Replication,MySQL_Databases.name == MySQL_Replication.db_name).outerjoin(MySQL_Status,MySQL_Status.db_name==MySQL_Databases.name).join(Data_Center,Data_Center.id==MySQL_Databases.datacenter_id).join(Db_Cluster,Db_Cluster.id==MySQL_Databases.cluster_id).all()
         cluster_info = Db_Cluster.query.all()
         return render_template('databases.html',username=username,myuserid=current_user.id,group_info=db_type,cluster_info=cluster_info,database_info=databases_info,href_name=href_name,sub_title=sub_title,messages=get_message(current_user.username))
     else:
@@ -474,25 +474,12 @@ def changedb(db_id):
         olddata.ip=newform.ip.data
         olddata.port=newform.port.data
         olddata.is_monitor = newform.monitor.data
-        '''
-        if ((newform.is_master.data == "alone" and newform.master_id.data != -2)):
-            flash(u'主库ID不正确，非主从的独立主机请填写：-2')
-            return render_template('db_type.html', username=username,myuserid=current_user.id, objForm=newform, href_name=href_name,sub_title=sub_title, messages=get_message(current_user.username))
-        elif (newform.is_master.data == "slave"):
-            if((newform.master_id.data == int(db_id) or (newform.master_id.data != db_id and (not MySQL_Databases.query.filter_by(id=newform.master_id.data).first())))):
-                flash(u'主库ID不正确，请填写实际主库对应的ID')
-                print(newform.data)
-                return render_template('db_type.html', username=username,myuserid=current_user.id, objForm=newform, href_name=href_name,sub_title=sub_title, messages=get_message(current_user.username))
-        elif (newform.is_master.data == "master"):
-            if(newform.master_id.data == int(db_id) or ((newform.master_id.data != -1)  and not MySQL_Databases.query.filter_by(id=newform.master_id.data).first())):
-                flash(u'主库ID不正确，非级联主库请填写：-1，级联主库：请填写对应主库的实际ID')
-                return render_template('db_type.html', username=username,myuserid=current_user.id, objForm=newform, href_name=href_name,sub_title=sub_title, messages=get_message(current_user.username))
-        '''
         db.session.commit()
         newdata = MySQL_Databases.query.filter_by(name=newform.name.data).first()
         status_data = MySQL_Status.query.filter_by(db_name=status_db_name).first()
         if newform.monitor.data == '0' and status_data is not None:
             db.session.delete(status_data)
+            #MySQL_Replication.query.filter_by(db_name=status_db_name).delete()
             db.session.commit()
         elif newform.monitor.data == '1' and status_data is None:
             status_data = MySQL_Status(db_name=newdata.name, ip=newdata.ip, port=newdata.port,
@@ -546,7 +533,7 @@ def health():
                                           MySQL_Status.ip,MySQL_Status.port, MySQL_Status.version, MySQL_Status.is_master,
                                           MySQL_Status.is_slave, MySQL_Status.last_modify_time,MySQL_Status.uptime,MySQL_Status.threads_connected,
                                           MySQL_Status.threads_running,MySQL_Status.transaction_persecond,MySQL_Status.questions_persecond,
-                                          MySQL_Replication.master_host).outerjoin(MySQL_Replication,MySQL_Databases.name == MySQL_Replication.db_name).outerjoin(MySQL_Status,MySQL_Status.db_name==MySQL_Databases.name).all()
+                                          MySQL_Replication.master_host).outerjoin(MySQL_Replication,MySQL_Databases.name == MySQL_Replication.db_name).join(MySQL_Status,MySQL_Status.db_name==MySQL_Databases.name).all()
         cluster_info = Db_Cluster.query.all()
         return render_template('mysql_health.html', username=username, myuserid=current_user.id, group_info=db_type,
                                cluster_info=cluster_info, database_info=databases_info, href_name=href_name,

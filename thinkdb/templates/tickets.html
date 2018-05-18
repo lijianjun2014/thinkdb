@@ -149,6 +149,11 @@
 								<div class="controls-self">
 									{{objForm.is_execute(class='uneditable-input',disabled='')}}
                                 </div></div>
+                                <div class="control-group">
+									<label class="control-label-self" for="focusedInput">工单说明:</label>
+								<div class="controls-self">
+								  {{objForm.introduction(class='uneditable-input',disabled='')}}
+								</div></div>
                                 <div class="form-group form-group-lg">
 									<label class="control-label-self" for="focusedInput">待审核SQL:</label>
 								<div class="controls-self-sql">
@@ -179,7 +184,11 @@
 													<td class="center">{{c.stage}}</td>
 													<td class="center">{{c.errlevel}}</td>
 													<td class="center">{{c.stagestatus}}</td>
-													<td class="right">{{c.errormessage}}</td>
+													{% if c.errormessage != "None" %}
+                                                        <td class="right"><font color="red">{{c.errormessage}}</font></td>
+                                                    {% else %}
+                                                        <td class="right">{{c.errormessage}}</td>
+                                                    {% endif %}
 													<td class="center">{{c.SQL}}</td>
 													<td class="center">{{c.Affected_rows}}</td>
 													<td class="center">{{c.sqlsha1}}</td>
@@ -221,5 +230,14 @@
 			</div>
 			{% endif %}
             </div>
+            <script type="text/javascript">
+                function isInceptionTimeOut() {
+                    var errMsg = {{ errMsg|tojson }};
+                    if (errMsg !=''){
+                        alert(errMsg);
+                    }
+                };
+                isInceptionTimeOut();
+            </script>
     		{% endblock %}
 

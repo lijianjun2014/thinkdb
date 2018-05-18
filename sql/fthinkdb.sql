@@ -47,7 +47,7 @@ CREATE TABLE `data_center` (
   `last_modify_time` datetime DEFAULT NULL COMMENT '最后更新时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of data_center
@@ -72,14 +72,14 @@ CREATE TABLE `db_cluster` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `ix_db_cluster_name` (`name`),
   KEY `ix_db_cluster_applicant` (`applicant`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of db_cluster
 -- ----------------------------
 INSERT INTO `db_cluster` VALUES ('1', '老测数据库', 'online', '测试用户组——变更', '测试申请人1', '2018-04-19 09:36:32', '2018-05-15 13:27:44');
 INSERT INTO `db_cluster` VALUES ('2', 'In_Test', 'online', '内网测试集群1', '测试申请人1', '2018-05-09 09:22:20', '2018-05-09 09:22:20');
-INSERT INTO `db_cluster` VALUES ('3', 'Real_Online_DBS', 'online', '线上数据库集群', '李建军', '2018-05-15 10:53:49', '2018-05-15 10:53:49');
+INSERT INTO `db_cluster` VALUES ('3', 'Real_Online_DBS', 'online', '线上数据库集群', '测试申请人2', '2018-05-15 10:53:49', '2018-05-15 10:53:49');
 INSERT INTO `db_cluster` VALUES ('4', 'New_Test_DB', 'online', '新测数据库', '测试申请人1', '2018-05-15 13:10:52', '2018-05-15 13:13:52');
 INSERT INTO `db_cluster` VALUES ('5', '本地虚拟机', 'online', '本地虚拟机', '测试申请人1', '2018-05-15 14:32:51', '2018-05-15 14:32:51');
 
@@ -99,7 +99,7 @@ CREATE TABLE `messages` (
   PRIMARY KEY (`id`),
   KEY `ix_messages_sender` (`sender`),
   KEY `ix_messages_recipient` (`recipient`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of messages
@@ -135,7 +135,7 @@ CREATE TABLE `mysql_databases` (
   KEY `ix_mysql_databases_ip` (`ip`),
   CONSTRAINT `mysql_databases_ibfk_1` FOREIGN KEY (`cluster_id`) REFERENCES `db_cluster` (`id`),
   CONSTRAINT `mysql_databases_ibfk_2` FOREIGN KEY (`datacenter_id`) REFERENCES `data_center` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of mysql_databases
@@ -167,7 +167,7 @@ CREATE TABLE `mysql_replication` (
   UNIQUE KEY `ix_mysql_replication_db_name` (`db_name`),
   KEY `ix_mysql_replication_master_host` (`master_host`),
   KEY `ix_mysql_replication_ip` (`ip`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of mysql_replication
@@ -201,7 +201,7 @@ CREATE TABLE `mysql_replication_history` (
   KEY `ix_mysql_replication_history_ip` (`ip`),
   KEY `ix_mysql_replication_history_db_name` (`db_name`),
   KEY `ix_mysql_replication_history_mysql_replication_id` (`mysql_replication_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3004 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of mysql_replication_history
@@ -413,7 +413,7 @@ CREATE TABLE `mysql_status` (
   KEY `ix_mysql_status_db_cluster_name` (`db_cluster_name`),
   KEY `ix_mysql_status_data_center_name` (`data_center_name`),
   KEY `ix_mysql_status_ip` (`ip`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of mysql_status
@@ -492,11 +492,30 @@ CREATE TABLE `mysql_status_history` (
   KEY `ix_mysql_status_history_db_cluster_name` (`db_cluster_name`),
   KEY `ix_mysql_status_history_data_center_name` (`data_center_name`),
   KEY `idx_db_name_last_time` (`db_name`,`last_modify_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=6960 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
--- Records of mysql_status_history
+-- Table structure for options
 -- ----------------------------
+DROP TABLE IF EXISTS `options`;
+CREATE TABLE `options` (
+  `id` smallint(6) NOT NULL AUTO_INCREMENT COMMENT '配置主键ID',
+  `site_name` varchar(32) NOT NULL DEFAULT '' COMMENT '站点名称',
+  `monitor_frequency` smallint(6) NOT NULL DEFAULT '1' COMMENT '监控频率分钟',
+  `email_on` smallint(6) NOT NULL DEFAULT '1' COMMENT '是否开启邮件报警',
+  `email_times` smallint(6) NOT NULL DEFAULT '3' COMMENT '邮件发送次数',
+  `email_sleep` smallint(6) NOT NULL DEFAULT '30' COMMENT '邮件报警达到次数后，休眠时间',
+  `receiver` varchar(256) NOT NULL DEFAULT '' COMMENT '邮件报警收件人地址;分号分割',
+  `smtp_host` varchar(20) NOT NULL DEFAULT '' COMMENT 'SMTP主机',
+  `smtp_port` varchar(20) NOT NULL DEFAULT '' COMMENT 'SMTP主机端口',
+  `smtp_user` varchar(20) NOT NULL DEFAULT '' COMMENT 'SMTP账户',
+  `smtp_password` varchar(32) NOT NULL DEFAULT '' COMMENT 'SMTP密码',
+  `add_time` datetime DEFAULT NULL COMMENT '添加时间',
+  `last_modify_time` datetime DEFAULT NULL COMMENT '最后更新时间',
+  PRIMARY KEY (`id`),
+  KEY `ix_options_add_time` (`add_time`),
+  KEY `ix_options_last_modify_time` (`last_modify_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Table structure for tickets
@@ -523,7 +542,7 @@ CREATE TABLE `tickets` (
   KEY `ix_tickets_add_time` (`add_time`),
   KEY `ix_tickets_applicant` (`applicant`),
   CONSTRAINT `tickets_ibfk_1` FOREIGN KEY (`db_id`) REFERENCES `mysql_databases` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of tickets
@@ -551,7 +570,7 @@ CREATE TABLE `users` (
   KEY `ix_users_status` (`status`),
   KEY `ix_users_real_name` (`real_name`),
   CONSTRAINT `users_ibfk_1` FOREIGN KEY (`group_id`) REFERENCES `user_group` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of users
@@ -570,7 +589,7 @@ CREATE TABLE `user_group` (
   `last_modify_time` datetime DEFAULT NULL COMMENT '最后更新时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `group_name` (`group_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of user_group

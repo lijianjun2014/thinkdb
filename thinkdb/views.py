@@ -23,12 +23,13 @@ config = {
     }
 #Inception数据库连接配置
 inception_config = {
-    'host': '192.168.79.128',
+    'host': '192.168.79.131',
     'port': 6669,
     'user': 'root',
     'password': '',
     'db': 'thinkdb',
     'charset': 'utf8mb4',
+    'connect_timeout':2,
     'cursorclass': pymysql.cursors.DictCursor,
     }
 # 慢查询数据库连接信息
@@ -133,7 +134,49 @@ def settings():
     sub_title = "全局配置"
     href_name = "全局配置"
     newform = Settings()
-    return render_template('settings.html',sub_title=sub_title,href_name=href_name, objForm=newform,username=username, myuserid=current_user.id, messages=get_message(current_user.username))
+    oldoptiondata = Options.query.filter().first()
+    if request.method == "GET":
+        newform.sitename.data = oldoptiondata.site_name
+        newform.monitor_frequency.data = oldoptiondata.monitor_frequency
+        newform.email_on.data = oldoptiondata.email_on
+        newform.email_times.data =oldoptiondata.email_times
+        newform.email_sleep.data = oldoptiondata.email_sleep
+        newform.receiver.data = oldoptiondata.receiver
+        newform.smtp_host.data = oldoptiondata.smtp_host
+        newform.smtp_port.data = oldoptiondata.smtp_port
+        newform.smtp_user.data = oldoptiondata.smtp_user
+        newform.smtp_password.data = oldoptiondata.smtp_password
+        return render_template('settings.html',sucessMsg='',sub_title=sub_title,href_name=href_name, objForm=newform,username=username, myuserid=current_user.id, messages=get_message(current_user.username))
+    if newform.validate_on_submit():
+        sitename = newform.sitename.data
+        monitor_frequency = newform.monitor_frequency.data
+        email_on = newform.email_on.data
+        email_times = newform.email_times.data
+        email_sleep = newform.email_sleep.data
+        receiver = newform.receiver.data
+        smtp_host = newform.smtp_host.data
+        smtp_port = newform.smtp_port.data
+        smtp_user = newform.smtp_user.data
+        smtp_password = newform.smtp_password.data
+        oldoptiondata = Options.query.filter().first()
+        newoptions = Options(site_name=newform.sitename.data,monitor_frequency=newform.monitor_frequency.data,email_on = newform.email_on.data,email_times = newform.email_times.data,email_sleep = newform.email_sleep.data,receiver = newform.receiver.data,smtp_host = newform.smtp_host.data,smtp_port = newform.smtp_port.data,smtp_user = newform.smtp_user.data,smtp_password = newform.smtp_password.data)
+        if oldoptiondata is None:
+            db.session.add(newoptions)
+            db.session.commit()
+        else:
+            changeoptiondata = Options.query.filter().first()
+            changeoptiondata.site_name = newform.sitename.data
+            changeoptiondata.monitor_frequency = newform.monitor_frequency.data
+            changeoptiondata.email_on = newform.email_on.data
+            changeoptiondata.email_times = newform.email_times.data
+            changeoptiondata.email_sleep = newform.email_sleep.data
+            changeoptiondata.receiver = newform.receiver.data
+            changeoptiondata.smtp_host = newform.smtp_host.data
+            changeoptiondata.smtp_port = newform.smtp_port.data
+            changeoptiondata.smtp_user = newform.smtp_user.data
+            changeoptiondata.smtp_password = newform.smtp_password.data
+            db.session.commit()
+            return render_template('settings.html',sucessMsg="资料更新成功",sub_title=sub_title,href_name=href_name, objForm=newform,username=username, myuserid=current_user.id, messages=get_message(current_user.username))
 
 #用户管理中心
 @app.route('/usercenter/',methods=['GET','POST'])
@@ -615,24 +658,25 @@ def slowquery():
         else:
             start_time = datetime.datetime.strptime(request.args.get('start_time'),"%m/%d/%Y")
         if request.args.get('end_time') is None or request.args.get('end_time')=='':
-            end_time = (datetime.datetime.now()).strftime("%Y-%m-%d %H:%m:%S")
+            end_time = (datetime.datetime.now()).strftime("%Y-%m-%d %H:%M:%S")
+            #end_time = 'now()'
         else:
             end_time = datetime.datetime.strptime(request.args.get('end_time'),"%m/%d/%Y")
             #end_time = str(end_time) + " 23:59:59"
         connection = pymysql.connect(**config)
         cursor = connection.cursor()
         # 执行sql语句，进行查询
-        sql = 'select B.serverid_max,format(sum(B.Query_time_median)/count(*),2) as "avg",sum(ts_cnt) as "times",A.checksum, A.last_seen,B.db_max, B.user_max,format(min(B.query_time_min),2) as query_time_min,format(max(B.query_time_max),2) as "query_time_max",A.fingerprint,if(locate("|",B.sample),SUBSTRING_INDEX(SUBSTRING_INDEX(B.sample,"|*",-1),"*|",1),"")  as "sample"  FROM mysql_slow_query_review A JOIN  mysql_slow_query_review_history B ON A.checksum = B.checksum WHERE  1 AND B.last_modify_time BETWEEN %s AND %s GROUP BY A.checksum'
+        sql = 'select C.ip,B.serverid_max,format(sum(B.Query_time_median)/count(*),2) as "avg",sum(ts_cnt) as "times",A.checksum, A.last_seen,B.db_max, B.user_max,format(min(B.query_time_min),2) as query_time_min,format(max(B.query_time_max),2) as "query_time_max",A.fingerprint,SUBSTRING_INDEX(SUBSTRING_INDEX(B.sample,"|*",-1),"*|",1) as "sample"  FROM mysql_slow_query_review A JOIN  mysql_slow_query_review_history B ON A.checksum = B.checksum JOIN mysql_databases C on C.id = B.serverid_max WHERE  1 AND B.last_modify_time BETWEEN %s AND %s GROUP BY A.checksum'
         cursor.execute(sql,(start_time, end_time))
         # 获取查询结果
         slowquery = cursor.fetchall()
         # 最慢的10条语句，进行查询
-        top10slowest_sql = 'select B.serverid_max, format(sum(B.Query_time_median)/count(*),2) as "avg",sum(ts_cnt) as "times",A.checksum, A.last_seen,B.db_max, B.user_max,format(min(B.query_time_min),2) as query_time_min,format(max(B.query_time_max),2) as "query_time_max",A.fingerprint,SUBSTRING_INDEX(SUBSTRING_INDEX(B.sample,"|*",-1),"*|",1) as "sample"  FROM mysql_slow_query_review A JOIN  mysql_slow_query_review_history B ON A.checksum = B.checksum WHERE  1 AND B.last_modify_time BETWEEN %s AND %s GROUP BY A.checksum  ORDER BY sum(B.Query_time_median)/count(*) desc limit 10'
+        top10slowest_sql = 'select C.ip,B.serverid_max, format(sum(B.Query_time_median)/count(*),2) as "avg",sum(ts_cnt) as "times",A.checksum, A.last_seen,B.db_max, B.user_max,format(min(B.query_time_min),2) as query_time_min,format(max(B.query_time_max),2) as "query_time_max",A.fingerprint,SUBSTRING_INDEX(SUBSTRING_INDEX(B.sample,"|*",-1),"*|",1) as "sample"  FROM mysql_slow_query_review A JOIN  mysql_slow_query_review_history B ON A.checksum = B.checksum JOIN mysql_databases C on C.id = B.serverid_max WHERE  1 AND B.last_modify_time BETWEEN %s AND %s GROUP BY A.checksum  ORDER BY sum(B.Query_time_median)/count(*) desc limit 10'
         cursor.execute(top10slowest_sql, (start_time, end_time))
         # 获取最慢10条查询结果
         top10slowest = cursor.fetchall()
         # 最频繁的10条语句，进行查询
-        top10frequent_sql = 'select B.serverid_max, format(sum(B.Query_time_median)/count(*),2) as "avg",sum(ts_cnt) as "times",A.checksum, A.last_seen,B.db_max, B.user_max,format(min(B.query_time_min),2) as query_time_min,format(max(B.query_time_max),2) as "query_time_max",A.fingerprint,if(locate("|",B.sample),SUBSTRING_INDEX(SUBSTRING_INDEX(B.sample,"|*",-1),"*|",1),"")  as "sample"  FROM mysql_slow_query_review A JOIN  mysql_slow_query_review_history B ON A.checksum = B.checksum WHERE  1 AND B.last_modify_time BETWEEN %s AND %s GROUP BY A.checksum  ORDER BY times desc limit 10'
+        top10frequent_sql = 'select C.ip,B.serverid_max, format(sum(B.Query_time_median)/count(*),2) as "avg",sum(ts_cnt) as "times",A.checksum, A.last_seen,B.db_max, B.user_max,format(min(B.query_time_min),2) as query_time_min,format(max(B.query_time_max),2) as "query_time_max",A.fingerprint,SUBSTRING_INDEX(SUBSTRING_INDEX(B.sample,"|*",-1),"*|",1) as "sample"  FROM mysql_slow_query_review A JOIN  mysql_slow_query_review_history B ON A.checksum = B.checksum JOIN mysql_databases C on C.id = B.serverid_max WHERE  1 AND B.last_modify_time BETWEEN %s AND %s GROUP BY A.checksum  ORDER BY times desc limit 10'
         cursor.execute(top10frequent_sql, (start_time, end_time))
         # 获取最慢10条查询结果
         top10frequent = cursor.fetchall()
@@ -649,8 +693,8 @@ def slowdetails(checksum):
     username = current_user.username
     sub_title = "慢查询列表"
     href_name = "慢查询详情"
-    start_time = (datetime.datetime.now() + datetime.timedelta(days = -28)).strftime("%Y-%m-%d")
-    end_time = (datetime.datetime.now()).strftime("%Y-%m-%d")
+    start_time = (datetime.datetime.now() + datetime.timedelta(days = -7)).strftime("%Y-%m-%d")
+    end_time = (datetime.datetime.now()).strftime("%Y-%m-%d %H:%M:%S")
     connection = pymysql.connect(**config)
     cursor = connection.cursor()
     # 执行sql语句，进行查询
@@ -663,6 +707,208 @@ def slowdetails(checksum):
     return render_template('slowquery.html', username=username,myuserid=current_user.id,slowquery=slowquery, href_name=href_name, sub_title=sub_title,messages=get_message(current_user.username))
 
 #######################################工单模块#########################################
+#Inception检测与返回
+class inceptionWork:
+    def __init__(self,tickets_id,db_id,operation,sqlcontent,introduction,username,objForm,sub_title,href_name,template_file):
+        if tickets_id != '':
+            self.tickets_id = tickets_id
+        self.db_id = db_id
+        self.target_db = MySQL_Databases.query.filter_by(id=db_id).first()
+        self.username = username
+        self.objForm = objForm
+        self.sub_title = sub_title
+        self.href_name = href_name
+        self.sqlcontent = sqlcontent
+        self.introduction = introduction
+        self.template_file = template_file
+        if operation == "execute":
+            self.operation = "--enable-execute;--enable-ignore-warnings;--enable-force;"
+        else:
+            self.operation = "--enable-check;"
+        self.sql_format_start1 = "/*--user=%s;--password=%s;--host=%s;--port=%d;" % (self.target_db.db_user, self.target_db.db_password, self.target_db.ip, self.target_db.port)
+        self.sql_format_start2 = "*/\ninception_magic_start;"
+        self.sql_format_end = "inception_magic_commit;"
+        self.sql = self.sql_format_start1 + self.operation + self.sql_format_start2 + "\n" + self.sqlcontent + "\n" + self.sql_format_end
+
+    def inceptionAudit(self):
+        try:
+            connection = pymysql.connect(**inception_config)
+            cur = connection.cursor()
+            cur.execute(self.sql)
+            result = cur.fetchall()
+            num_fields = len(cur.description)
+            field_names = [i[0] for i in cur.description]
+            #打印Inception对MySQL语句的审计结果
+            for row in result:
+                print(row[0], "|", row[1], "|", row[2], "|", row[3], "|", row[4], "|", row[5], "|", row[6], "|", row[7],"|", row[8], "|", row[9], "|", row[10])
+            cur.close()
+            connection.close()
+        except Exception as err:
+            errorCount = 0
+            try:
+                for row in result:
+                    if (row['errormessage']) != "None":
+                        errorCount = errorCount + 1
+                if errorCount > 0:
+                    return render_template(self.template_file, have_checked=0, errMsg='', username=self.username,objForm=self.objForm, href_name=self.href_name,sub_title=self.sub_title,result=result,messages=get_message(current_user.username))
+                else:
+                    return render_template(self.template_file, have_checked=1, errMsg='', username=self.username,
+                                           objForm=self.objForm, href_name=self.href_name, sub_title=self.sub_title,
+                                           result=result, messages=get_message(current_user.username))
+            except Exception as msg:
+                errMsg = "Inception服务器连接超时！检测失败！"
+                return render_template(self.template_file, errMsg=errMsg, username=self.username,
+                                       objForm=self.objForm, href_name=self.href_name, sub_title=self.sub_title,
+                                       messages=get_message(current_user.username))
+
+
+    def incetptionSubmit(self):
+        try:
+            connection = pymysql.connect(**inception_config)
+            cur = connection.cursor()
+            cur.execute(self.sql)
+            result = cur.fetchall()
+            num_fields = len(cur.description)
+            field_names = [i[0] for i in cur.description]
+            #打印Inception对MySQL语句的审计结果
+            for row in result:
+                print(row[0], "|", row[1], "|", row[2], "|", row[3], "|", row[4], "|", row[5], "|", row[6], "|", row[7],"|", row[8], "|", row[9], "|", row[10])
+            cur.close()
+            connection.close()
+        except Exception as err:
+            errorCount = 0
+            try:
+                for row in result:
+                    if (row['errormessage']) != "None":
+                        errorCount = errorCount + 1
+                if errorCount > 0:
+                    return render_template(self.template_file, have_checked=0, errMsg='', username=self.username,objForm=self.objForm, href_name=self.href_name,sub_title=self.sub_title,result=result,messages=get_message(current_user.username))
+                else:
+                    # 检测通过执行代码块
+                    # 获取DBA团队用户名
+                    _users = User.query.filter_by(group_id=1).all()
+                    # 生成工单号
+                    _tickets_num = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S')) + str(
+                        random.randint(100, 999))
+                    _auditor = "test01"  # 后期需要判断，直接反馈给上级或者DBA团队
+                    _add_time = datetime.datetime.now()
+                    db_id = self.db_id
+                    _status = "待审核"
+                    _type = "DDL"
+                    tickets = Tickets(tickets_num=_tickets_num, applicant=self.username, auditor=_auditor,
+                                      add_time=_add_time, status=_status, sqlcontent=self.sqlcontent, db_id=self.db_id,
+                                      introduction=self.introduction, type=_type)
+                    db.session.add(tickets)
+                    db.session.commit()
+                    # 写消息到数据库
+                    for u in _users:
+                        messages = Messages(recipient=u.username, sender=self.username, title="DML工单：" + _tickets_num,
+                                            content=self.username + "   提交了新工单:" + _tickets_num + " 需审核，请尽快处理！")
+                        db.session.add(messages)
+                    db.session.commit()
+                    messages = Messages(recipient=self.username, sender=self.username, title="提交新DML工单：" + _tickets_num,
+                                        content="Dear " + self.username + ":\n   您在<" + str(
+                                            datetime.datetime.now()) + ">提交了新工单:" + _tickets_num + "。 请在我们的工单查看工单进度")
+                    db.session.commit()
+                    return redirect('/tickets/')
+            except Exception as msg:
+                errMsg = "Inception服务器连接超时！工单提交失败！"
+                return render_template(self.template_file, errMsg=errMsg, username=self.username,
+                                       objForm=self.objForm, href_name=self.href_name, sub_title=self.sub_title,
+                                       messages=get_message(current_user.username))
+    #工单查看页面的通过功能函数
+    def inceptionPass(self):
+        try:
+            connection = pymysql.connect(**inception_config)
+            cur = connection.cursor()
+            cur.execute(self.sql)
+            result = cur.fetchall()
+            num_fields = len(cur.description)
+            field_names = [i[0] for i in cur.description]
+            #打印Inception对MySQL语句的审计结果
+            for row in result:
+                print(row[0], "|", row[1], "|", row[2], "|", row[3], "|", row[4], "|", row[5], "|", row[6], "|", row[7],"|", row[8], "|", row[9], "|", row[10])
+            cur.close()
+            connection.close()
+        except Exception as err:
+            errorCount = 0
+            try:
+                for row in result:
+                    if (row['errormessage']) != "None":
+                        errorCount = errorCount + 1
+                if errorCount > 0:
+                    return render_template(self.template_file, have_checked=0, errMsg='', username=self.username,objForm=self.objForm, href_name=self.href_name,sub_title=self.sub_title,result=result,messages=get_message(current_user.username))
+
+                else:
+                    # 检测通过执行代码块
+                    __olddata = Tickets.query.filter_by(id=self.tickets_id).first()
+                    __olddata.status = "通过"
+                    __olddata.audit_advise = self.username + " < " + datetime.datetime.now().strftime("%Y-%m-%d %H:%S") + " > 通过。\n" + __olddata.audit_advise
+                    db.session.commit()
+                    message_title = "工单<" + str(__olddata.tickets_num) + ">通过审核"
+                    message_content = "Dear " + __olddata.applicant + ":\n您在 <" + str(
+                        __olddata.add_time) + "> 提交的工单:<" + str(__olddata.tickets_num) + ">已通过审核！"
+                    messages = Messages(recipient=__olddata.applicant, sender=self.username, title=message_title,
+                                        content=message_content, add_time=datetime.datetime.now())
+                    db.session.add(messages)
+                    db.session.commit()
+                    return redirect(url_for('ticketview', tickets_id=self.tickets_id))
+
+            except Exception as msg:
+                errMsg = "Inception服务器连接超时！"
+                return render_template(self.template_file, errMsg=errMsg, username=self.username,
+                                       objForm=self.objForm, href_name=self.href_name, sub_title=self.sub_title,
+                                       messages=get_message(current_user.username))
+
+    # 工单查看页面的执行功能函数
+    def inceptionExecute(self):
+        try:
+            connection = pymysql.connect(**inception_config)
+            cur = connection.cursor()
+            cur.execute(self.sql)
+            result = cur.fetchall()
+            num_fields = len(cur.description)
+            field_names = [i[0] for i in cur.description]
+            # 打印Inception对MySQL语句的审计结果
+            for row in result:
+                print(row[0], "|", row[1], "|", row[2], "|", row[3], "|", row[4], "|", row[5], "|", row[6], "|",
+                      row[7], "|", row[8], "|", row[9], "|", row[10])
+            cur.close()
+            connection.close()
+        except Exception as err:
+            errorCount = 0
+            try:
+                for row in result:
+                    if (row['errormessage']) != "None":
+                        errorCount = errorCount + 1
+                if errorCount > 0:
+                    return render_template(self.template_file, have_checked=0, errMsg='', username=self.username,
+                                           objForm=self.objForm, href_name=self.href_name, sub_title=self.sub_title,
+                                           result=result, messages=get_message(current_user.username))
+
+                else:
+                    # 检测通过执行代码块
+                    __olddata = Tickets.query.filter_by(id=self.tickets_id).first()
+                    __olddata.audit_advise = self.username + " < " + datetime.datetime.now().strftime(
+                        "%Y-%m-%d %H:%S") + " > 执行。\n" + __olddata.audit_advise
+                    __olddata.is_execute = 1
+                    db.session.commit()
+                    message_title = "工单<" + str(__olddata.tickets_num) + ">已执行。"
+                    message_content = "Dear " + __olddata.applicant + ":<br>" + self.username + "执行了您于 <" + str(
+                        __olddata.add_time) + "> 提交的工单:<" + str(__olddata.tickets_num) + ">，请稍后查看结果！"
+                    messages = Messages(recipient=__olddata.applicant, sender=self.username, title=message_title,
+                                        content=message_content, add_time=datetime.datetime.now())
+                    db.session.add(messages)
+                    db.session.commit()
+                    return redirect(url_for('ticketview', tickets_id=self.tickets_id))
+
+            except Exception as msg:
+                errMsg = "Inception服务器连接超时！执行失败！"
+                return render_template(self.template_file, errMsg=errMsg, username=self.username,
+                                       objForm=self.objForm, href_name=self.href_name, sub_title=self.sub_title,
+                                       messages=get_message(current_user.username))
+
+
 #工单列表页面
 @app.route('/tickets/',methods=['GET','POST'])
 @login_required
@@ -672,9 +918,9 @@ def tickets():
     sub_title = "我的工单"
     href_name = "我的工单列表"
     tickets_list = Tickets.query.filter_by(applicant=username,is_delete = 0).order_by(Tickets.tickets_num.desc())
-    return render_template('tickets.html', username=username,myuserid=current_user.id,tickets_list=tickets_list, href_name=href_name, sub_title=sub_title,messages=get_message(current_user.username))
+    return render_template('tickets.html',errMsg='', username=username,myuserid=current_user.id,tickets_list=tickets_list, href_name=href_name, sub_title=sub_title,messages=get_message(current_user.username))
 
-#查看工单
+#审核工单
 @app.route('/ticketview/<tickets_id>/',methods=['GET','POST'])
 @login_required
 def ticketview(tickets_id):
@@ -692,10 +938,10 @@ def ticketview(tickets_id):
         objForm.add_time.data = tickets_data.add_time
         objForm.sqlcontent.data = tickets_data.sqlcontent
         objForm.status.data = tickets_data.status
+        objForm.introduction.data = tickets_data.introduction
         objForm.audit_advise.data = tickets_data.audit_advise
         objForm.is_execute.data = tickets_data.is_execute
-    #objForm.audit_advise = ''
-        return render_template('tickets.html',username=username,myuserid=current_user.id,objForm=objForm, href_name=href_name, sub_title=sub_title,messages=get_message(current_user.username))
+        return render_template('tickets.html',errMsg='', username=username,myuserid=current_user.id,objForm=objForm, href_name=href_name, sub_title=sub_title,messages=get_message(current_user.username))
     else:
         objForm.tickets_num.data = tickets_data.tickets_num
         objForm.applicant.data = tickets_data.applicant
@@ -705,66 +951,20 @@ def ticketview(tickets_id):
         objForm.sqlcontent.data = tickets_data.sqlcontent
         objForm.status.data = tickets_data.status
         objForm.is_execute.data = tickets_data.is_execute
-        #定义执行动作格式
-        # 执行还是校验
-        operation_check = '--enable-check;'
-        operation_execute = '--enable-execute;--enable-ignore-warnings;--enable-force;'
-        #拼装目标数据库信息
-        target_db = MySQL_Databases.query.filter_by(id=tickets_data.db_id).first()
-        sql_format_start1 = "/*--user=%s;--password=%s;--host=%s;--port=%d;" % (target_db.db_user,target_db.db_password,target_db.ip,target_db.port)
-        sql_format_start2 = "*/\ninception_magic_start;"
-        sql_format_end = "inception_magic_commit;"
+        objForm.introduction.data = tickets_data.introduction
+
         if ('check' in request.form.values()):
-            # 拼接sQL语句
-            sql_content = objForm.sqlcontent.data
-            sql = sql_format_start1 + operation_check + sql_format_start2 + "\n" + sql_content + "\n" + sql_format_end
-            try:
-                connection = pymysql.connect(**inception_config)
-                cur = connection.cursor()
-                cur.execute(sql)
-                result = cur.fetchall()
-                num_fields = len(cur.description)
-                field_names = [i[0] for i in cur.description]
-                # 打印出来Inception对MySQL语句的审计结果
-                for row in result:
-                    print(row[0], "|", row[1], "|", row[2], "|", row[3], "|", row[4], "|", row[5], "|", row[6], "|",row[7], "|", row[8], "|", row[9], "|", row[10])
-                cur.close()
-                connection.close()
-            except Exception as err:
-                return render_template('tickets.html', username=username,myuserid=current_user.id,objForm=objForm, href_name=href_name,sub_title=sub_title, result=result,messages=get_message(current_user.username))
+            sql_content = tickets_data.sqlcontent
+            introduction = tickets_data.introduction
+            inceptioncheckreturn = inceptionWork(tickets_id,tickets_data.db_id, "check", sql_content, introduction, username,objForm, sub_title, href_name, 'tickets.html')
+            result = inceptioncheckreturn.inceptionAudit()
+            return result
         elif ('pass' in request.form.values()):
             sql_content = tickets_data.sqlcontent
-            sql = sql_format_start1 + operation_check + sql_format_start2 + "\n" + sql_content + "\n" + sql_format_end
-            try:
-                connection = pymysql.connect(**inception_config)
-                cur = connection.cursor()
-                cur.execute(sql)
-                result = cur.fetchall()
-                num_fields = len(cur.description)
-                field_names = [i[0] for i in cur.description]
-                # 打印出来Inception对MySQL语句的审计结果
-                for row in result:
-                    print(row[0], "|", row[1], "|", row[2], "|", row[3], "|", row[4], "|", row[5], "|", row[6], "|",row[7], "|", row[8], "|", row[9], "|", row[10])
-                cur.close()
-                connection.close()
-            except Exception as err:
-                count = 0
-                for i in result:
-                    if (i['errormessage']) != "None":
-                        count = count + 1
-                if count > 0:
-                    return render_template('tickets.html', username=username, myuserid=current_user.id, objForm=objForm,href_name=href_name, sub_title=sub_title, result=result,messages=get_message(current_user.username))
-
-            olddata = Tickets.query.filter_by(id=tickets_id).first()
-            olddata.status = "通过"
-            olddata.audit_advise = current_user.username + " < " + datetime.datetime.now().strftime("%Y-%m-%d %H:%S") + " > 通过。\n" + objForm.audit_advise.data
-            db.session.commit()
-            message_title = "工单<" + str(olddata.tickets_num) + ">通过审核"
-            message_content = "Dear " + olddata.applicant + ":\n您在 <" + str(olddata.add_time) + "> 提交的工单:<" + str(olddata.tickets_num) + ">已通过审核！"
-            messages = Messages(recipient=olddata.applicant, sender=username, title=message_title,content=message_content,add_time=datetime.datetime.now())
-            db.session.add(messages)
-            db.session.commit()
-            return redirect(url_for('ticketview', tickets_id=tickets_id))
+            introduction = tickets_data.introduction
+            inceptioncheckreturn = inceptionWork(tickets_id,tickets_data.db_id, "check", sql_content,introduction,username,objForm,sub_title, href_name, 'tickets.html')
+            result = inceptioncheckreturn.inceptionPass()
+            return result
         if objForm.validate_on_submit():
             if ('reject' in request.form.values()):
                 olddata = Tickets.query.filter_by(id=tickets_id).first()
@@ -780,40 +980,13 @@ def ticketview(tickets_id):
                 #return render_template('tickets.html', username=username, objForm=objForm, href_name=href_name,sub_title=sub_title, result=result)
             elif ('execute' in request.form.values() and tickets_data.is_execute == 0):
                 sql_content = tickets_data.sqlcontent
-                sql = sql_format_start1 + operation_execute + sql_format_start2 + "\n" + sql_content + "\n" + sql_format_end
-                try:
-                    connection = pymysql.connect(**inception_config)
-                    cur = connection.cursor()
-                    cur.execute(sql)
-                    result = cur.fetchall()
-                    num_fields = len(cur.description)
-                    field_names = [i[0] for i in cur.description]
-                    # 打印出来Inception对MySQL语句的审计结果
-                    for row in result:
-                        print(row[0], "|", row[1], "|", row[2], "|", row[3], "|", row[4], "|", row[5], "|", row[6], "|",row[7], "|", row[8], "|", row[9], "|", row[10])
-                    cur.close()
-                    connection.close()
-                except Exception as err:
-                    count = 0
-                    for i in result:
-                        if (i['errormessage']) != "None":
-                            count = count + 1
-                    if count >0:
-                        return render_template('tickets.html', username=username,myuserid=current_user.id,objForm=objForm, href_name=href_name,sub_title=sub_title, result=result,messages=get_message(current_user.username))
-                olddata = Tickets.query.filter_by(id=tickets_id).first()
-                olddata.status = "通过"
-                olddata.is_execute = 1
-                olddata.audit_advise = current_user.username + " < "+ datetime.datetime.now().strftime("%Y-%m-%d %H:%S") +" > 执行。\n" + objForm.audit_advise.data
-                db.session.commit()
-                message_title = "工单<" + str(olddata.tickets_num) + ">已执行!"
-                message_content = "Dear " + olddata.applicant + ":\n  <"+username+" >执行了您在 <" + str(olddata.add_time) + "> 提交的工单:<" + str(olddata.tickets_num) + ">！"
-                messages = Messages(recipient=olddata.applicant, sender=username, title=message_title,content=message_content,add_time=datetime.datetime.now())
-                db.session.add(messages)
-                db.session.commit()
-                return redirect(url_for('ticketview', tickets_id=tickets_id))
+                introduction = tickets_data.introduction
+                inceptioncheckreturn = inceptionWork(tickets_id, tickets_data.db_id, "execute", sql_content, introduction,username,objForm, sub_title, href_name, 'tickets.html')
+                result = inceptioncheckreturn.inceptionExecute()
+                return result
         else:
-            return  render_template('tickets.html',username=username,myuserid=current_user.id,objForm=objForm, href_name=href_name, sub_title=sub_title,messages=get_message(current_user.username))
-    return redirect(url_for('tickets'))
+            return  render_template('tickets.html',errMsg='', username=username,myuserid=current_user.id,objForm=objForm, href_name=href_name, sub_title=sub_title,messages=get_message(current_user.username))
+    #return redirect(url_for('tickets'))
 
 #删除工单
 @app.route('/deltickets/<tickets_id>')
@@ -842,56 +1015,20 @@ def ddl():
     objForm = TargetDbForm()
     objForm.db_id.choices = [(v.id, v.name) for v in MySQL_Databases.query.all()]
     if objForm.validate_on_submit():
-        # 192.168.79.128
-        # 执行还是校验
-        # 查找所选目标数据库信息
-        target_db = MySQL_Databases.query.filter_by(id=objForm.db_id.data).first()
-        operation_check = '--enable-check;'
-        operation_execute = '--enable-execute;--enable-ignore-warnings;--enable-force;'
-        sql_format_start1 = "/*--user=%s;--password=%s;--host=%s;--port=%d;" % (target_db.db_user, target_db.db_password, target_db.ip, target_db.port)
-        sql_format_start2 = "*/\ninception_magic_start;"
-        sql_format_end = "inception_magic_commit;"
         if ('check' in request.form.values()):
             sql_content = request.form['sqlarea']
-            sql = sql_format_start1 + operation_check + sql_format_start2 + "\n" + sql_content + "\n" + sql_format_end
-            try:
-                connection = pymysql.connect(**inception_config)
-                cur = connection.cursor()
-                cur.execute(sql)
-                result = cur.fetchall()
-                num_fields = len(cur.description)
-                field_names = [i[0] for i in cur.description]
-                # 打印出来Inception对MySQL语句的审计结果
-                for row in result:
-                    print(row[0], "|", row[1], "|", row[2], "|", row[3], "|", row[4], "|", row[5], "|", row[6], "|",row[7], "|", row[8], "|", row[9], "|", row[10])
-                cur.close()
-                connection.close()
-            except Exception as err:
-                return render_template('dml.html', username=username, myuserid=current_user.id, objForm=objForm,href_name=href_name, sub_title=sub_title, result=result,messages=get_message(current_user.username))
-        elif ('submit' in request.form.values()):
-            # 获取DBA团队用户名
-            users = User.query.filter_by(group_id=1).all()
-            # 生成工单号
-            tickets_num = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S')) + str(random.randint(100, 999))
-            auditor = "test01"  # 后期需要判断，直接反馈给上级或者DBA团队
-            add_time = datetime.datetime.now()
-            sqlcontent = request.form['sqlarea']
             introduction = request.form['ticket_introduction']
-            db_id = request.form['db_id']
-            status = "待审核"
-            type = "DDL"
-            tickets = Tickets(tickets_num=tickets_num, applicant=username, auditor=auditor, add_time=add_time,status=status, sqlcontent=sqlcontent, db_id=db_id,introduction=introduction,type=type)
-            db.session.add(tickets)
-            db.session.commit()
-            # 写消息到数据库
-            for u in users:
-                messages = Messages(recipient=u.username, sender=username, title="DML工单：" + tickets_num,content=username + "   提交了新工单:" + tickets_num + " 需审核，请尽快处理！")
-                db.session.add(messages)
-            db.session.commit()
-            messages = Messages(recipient=username, sender=username, title="提交新DML工单：" + tickets_num,content="Dear " + username + ":\n   您在<" + str(datetime.datetime.now()) + ">提交了新工单:" + tickets_num + "。 请在我们的工单查看工单进度")
-            db.session.commit()
-            return redirect('/tickets/')
-    return render_template('dml.html', username=username, myuserid=current_user.id, objForm=objForm,href_name=href_name, sub_title=sub_title,messages=get_message(current_user.username))
+            inceptioncheckreturn = inceptionWork('',objForm.db_id.data,"check",sql_content,introduction,username,objForm,sub_title,href_name,'dml.html')
+            result = inceptioncheckreturn.inceptionAudit()
+            return result
+        elif ('submit' in request.form.values()):
+            #提交按钮触发后会再次自动检测，以防止检测通过后再更改代码
+            sql_content = request.form['sqlarea']
+            introduction = request.form['ticket_introduction']
+            inceptionexecute = inceptionWork('',objForm.db_id.data,"check",sql_content,introduction,username,objForm,sub_title,href_name,'dml.html')
+            result = inceptionexecute.incetptionSubmit()
+            return result
+    return render_template('dml.html',have_checked=0,errMsg='',username=username, myuserid=current_user.id, objForm=objForm,href_name=href_name, sub_title=sub_title,messages=get_message(current_user.username))
 
 #DML提交页面
 @app.route('/dml/',methods=['GET','POST'])
@@ -904,57 +1041,21 @@ def dml():
     objForm = TargetDbForm()
     objForm.db_id.choices = [(v.id, v.name) for v in MySQL_Databases.query.all()]
     if objForm.validate_on_submit():
-        #192.168.79.128
-        # 执行还是校验
-        #查找所选目标数据库信息
-        target_db = MySQL_Databases.query.filter_by(id=objForm.db_id.data).first()
-        operation_check = '--enable-check;'
-        operation_execute = '--enable-execute;--enable-ignore-warnings;--enable-force;--enable-remote-backup'
-        sql_format_start1 = "/*--user=%s;--password=%s;--host=%s;--port=%d;" % (target_db.db_user,target_db.db_password,target_db.ip,target_db.port)
-        sql_format_start2 = "*/\ninception_magic_start;"
-        sql_format_end = "inception_magic_commit;"
         if ('check' in request.form.values()):
             sql_content = request.form['sqlarea']
-            sql = sql_format_start1 + operation_check + sql_format_start2 + "\n" + sql_content + "\n" + sql_format_end
-            print(sql)
-            try:
-                connection = pymysql.connect(**inception_config)
-                cur = connection.cursor()
-                cur.execute(sql)
-                result = cur.fetchall()
-                num_fields = len(cur.description)
-                field_names = [i[0] for i in cur.description]
-                # 打印出来Inception对MySQL语句的审计结果
-                for row in result:
-                    print(row[0], "|", row[1], "|", row[2], "|", row[3], "|", row[4], "|", row[5], "|", row[6], "|",row[7], "|",row[8], "|", row[9], "|", row[10])
-                cur.close()
-                connection.close()
-            except Exception as err:
-                return render_template('dml.html', username=username,myuserid=current_user.id, objForm=objForm, href_name=href_name,sub_title=sub_title, result=result,messages=get_message(current_user.username))
-        elif('submit' in request.form.values()):
-            # 获取DBA团队用户名
-            users = User.query.filter_by(group_id=1).all()
-            #生成工单号
-            tickets_num = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))+str(random.randint(100,999))
-            auditor = "test01"  #后期需要判断，直接反馈给上级或者DBA团队
-            add_time = datetime.datetime.now()
-            sqlcontent =  request.form['sqlarea']
             introduction = request.form['ticket_introduction']
-            type = "DML"
-            db_id = request.form['db_id']
-            status = "待审核"
-            tickets = Tickets(tickets_num=tickets_num,introduction=introduction,applicant=username,auditor=auditor,add_time=add_time,status=status,sqlcontent=sqlcontent,db_id=db_id,type=type)
-            db.session.add(tickets)
-            db.session.commit()
-            #写消息到数据库
-            for u in users:
-                messages = Messages(recipient=u.username,sender=username,title="DML工单："+tickets_num,content=username + "   提交了新工单:"+tickets_num+" 需审核，请尽快处理！")
-                db.session.add(messages)
-            db.session.commit()
-            messages = Messages(recipient=username, sender=username, title="提交新DML工单：" + tickets_num,content="Dear "+ username + ":\n   您在<"+str(datetime.datetime.now())+">提交了新工单:" + tickets_num + "。 请在我们的工单查看工单进度")
-            db.session.commit()
-            return redirect('/tickets/')
-    return render_template('dml.html', username=username,myuserid=current_user.id, objForm=objForm, href_name=href_name, sub_title=sub_title,messages=get_message(current_user.username))
+            inceptioncheckreturn = inceptionWork('', objForm.db_id.data, "check", sql_content, introduction, username,
+                                                 objForm, sub_title, href_name, 'dml.html')
+            result = inceptioncheckreturn.inceptionAudit()
+            return result
+        elif('submit' in request.form.values()):
+            # 提交按钮触发后会再次自动检测，以防止检测通过后再更改代码
+            sql_content = request.form['sqlarea']
+            introduction = request.form['ticket_introduction']
+            inceptionexecute = inceptionWork('', objForm.db_id.data, "check", sql_content, introduction, username,objForm, sub_title, href_name, 'dml.html')
+            result = inceptionexecute.incetptionSubmit()
+            return result
+    return render_template('dml.html',have_checked=0,errMsg='', username=username,myuserid=current_user.id, objForm=objForm, href_name=href_name, sub_title=sub_title,messages=get_message(current_user.username))
 
 
 ###Ajax_OneColumn 图表中的表状图

@@ -77,6 +77,7 @@ class TicketsForm(FlaskForm):
     status = StringField('工单状态',validators=[DataRequired()])
     is_execute = IntegerField('是否执行过')
     sqlcontent = TextAreaField('待审核sql内容',validators=[DataRequired()],render_kw={"class":"form-control-self","rows":"8","placeholder":"请输入你的SQL语句，多条语句用;分割"})
+    introduction = StringField(validators=[DataRequired()])
     add_time = StringField('申请时间',validators=[DataRequired()])
     db_id = IntegerField('目标数据库ID',validators=[DataRequired()],render_kw={"placeholder":"目标数据库ID"})
     audit_advise = TextAreaField('审核意见',validators=[DataRequired()],render_kw={"class":"form-control","rows":"8","placeholder":"审核意见"})

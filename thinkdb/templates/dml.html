@@ -87,18 +87,27 @@
 					</div>
 				  </div>
 							  <div class="form-actions">
-
 								  <button type="submit" class="btn btn-primary-audit" name="check" value="check"><i class="halflings-icon eye-open"></i>检测</button>
-								  <button type="submit" class="btn btn-primary-sumbit" name="submit" value="submit"><i class="halflings-icon ok"></i>提交(<font color = red>请先检测无误后再提交</font>)</button>
-                                {{message |safe}}
+								  {% if have_checked == 1 %}
+                                  <button type="submit" class="btn btn-primary-sumbit" name="submit" value="submit"><i class="halflings-icon ok"></i>提交(<font color = red>请先检测无误后再提交</font>)</button>
+                                  {% endif %}
+                               {{message |safe}}
 							  </div>
 							</fieldset>
 						  </form>
-
 					</div>
 				</div><!--/span-->
-
-
 			</div><!--/row-->
-    
+            <script type="text/javascript">
+                function isInceptionTimeOut() {
+                    var errMsg = {{ errMsg|tojson }};
+                    if (errMsg !=''){
+                        alert(errMsg);
+                    }
+                };
+                isInceptionTimeOut();
+            </script>
+
+
+
 			{% endblock %}

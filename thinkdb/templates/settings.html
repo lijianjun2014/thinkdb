@@ -61,6 +61,13 @@
                                   {{objForm.email_on}}
                                   <!-- 如果后台返回了错误信息，则将信息放入Span标签，否则不显示！-->
                                 </div></div>
+                                <div class="control-group">
+                                   <label class="control-label-self" for="focusedInput">接收人:</label>
+								<div class="controls-self">
+                                  <!-- 接收从后台穿过来的FORM对象，自动生成INPUT -->
+                                  {{objForm.receiver}}
+                                  <!-- 如果后台返回了错误信息，则将信息放入Span标签，否则不显示！-->
+                                </div></div>
 								<div class="control-group">
                                    <label class="control-label-self" for="focusedInput">邮件次数:</label>
 								<div class="controls-self">
@@ -115,5 +122,14 @@
 			
 			</div><!--/row-->
 			
+            <script type="text/javascript">
+                function updatesucess() {
+                    var errMsg = {{ sucessMsg|tojson }};
+                    if (errMsg !=''){
+                        alert(errMsg);
+                    }
+                };
+                updatesucess();
+            </script>
 
     		{% endblock %}

@@ -27,10 +27,10 @@ Thinkdb现在处于开发中是一个雏形，很多功能暂未实现，当然�
     6. 编辑/etc/profile：    echo "PATH=$PATH:/usr/local/python3.6/bin" >>/etc/profile  && source /etc/profile
     7. 修改yum文件，防止python升级导致Yum 命令失效：
        vim /usr/bin/yum
-       ```diff
-       - #!/usr/bin/python
-       + #!/usr/bin/python_old
-       ```
+```diff
+- #!/usr/bin/python
++ #!/usr/bin/python_old
+```
 ## 安装虚拟环境和依赖包
     1. 安装virtualenv:        /usr/local/python3.6/bin/pip3.6 install virtualenv
     2. 创建Thinkdb虚拟环境：      /usr/local/python3.6/bin/virtualenv /usr/local/thinkdb/venv

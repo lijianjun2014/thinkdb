@@ -144,7 +144,7 @@ class mailSend():
 
     def sendmail(self):
         smtp = smtplib.SMTP_SSL(self.smtp_host)
-        smtp.set_debuglevel(1)
+        #smtp.set_debuglevel(1)
         smtp.ehlo(self.smtp_host)
         smtp.login(self.smtp_user,self.smtp_password)
         msg = MIMEText(self.mail_content,'html',self.mail_encoding)
@@ -890,7 +890,6 @@ class inceptionWork:
                     db.session.commit()
                     mailsettings = Options.query.all()[0]
                     _receiver = User.query.filter_by(username=__olddata.applicant).first()
-                    print(_receiver.email)
                     mail_subject = "工单状态变更%s" % str(__olddata.tickets_num)
                     mail_content = "Dear %s：<br>　　您在%s上提交的工单，编号:<a href='http://127.0.0.1:5001/' target='blank'>%s</a> ,已通过审核，请知悉，具体状态请点击工单编号查看！" % (
                         __olddata.applicant, mailsettings.site_name,__olddata.tickets_num)

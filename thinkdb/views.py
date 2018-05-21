@@ -1,3 +1,4 @@
+#coding:utf-8
 from sqlalchemy.sql import or_,and_
 from flask import render_template,request,url_for,redirect,session,flash,jsonify
 from werkzeug.security import check_password_hash,generate_password_hash
@@ -5,7 +6,9 @@ from flask_login import login_user,logout_user,login_required,LoginManager,curre
 from thinkdb import app,login_manager,db
 from thinkdb.models import *
 from thinkdb.forms import *
-import datetime,random,time,asyncio,hashlib,os,json
+import datetime,random,time,asyncio,hashlib,os,json,smtplib
+from email.mime.text import MIMEText
+from email.header import Header
 from threading import Lock
 ####以下是为了服务端命令结果
 
@@ -103,7 +106,6 @@ def messages_center():
     single_message = Messages.query.filter_by(recipient=username).all()
     return render_template('message.html', username=username, myuserid=current_user.id, single_message=single_message,href_name=href_name, sub_title=sub_title, messages=get_message(current_user.username))
 
-
 #查看消息
 @login_required
 @app.route('/messages/<messages_id>')
@@ -126,6 +128,32 @@ def delmessage(messages_id):
         return redirect(url_for('messages_center'))
     else:
         return redirect(url_for('messages_center'))
+
+#发送邮件的类
+class mailSend():
+    def __init__(self,from_user,to_user,smtp_host,smtp_port,smtp_user,smtp_password,subject,mail_content):
+        self.to_user = to_user
+        self.from_user = from_user
+        self.smtp_host =smtp_host
+        self.smtp_port = smtp_port
+        self.smtp_user = smtp_user
+        self.smtp_password = smtp_password
+        self.mail_subject = subject
+        self.mail_content = mail_content
+        self.mail_encoding = "utf-8"
+
+    def sendmail(self):
+        smtp = smtplib.SMTP_SSL(self.smtp_host)
+        smtp.set_debuglevel(1)
+        smtp.ehlo(self.smtp_host)
+        smtp.login(self.smtp_user,self.smtp_password)
+        msg = MIMEText(self.mail_content,'html',self.mail_encoding)
+        msg["Subject"] = Header(self.mail_subject,self.mail_encoding)
+        msg["from"] = self.from_user
+        msg["to"] = self.to_user
+        smtp.sendmail(self.from_user,self.to_user,msg.as_string().encode('utf-8'))
+        smtp.quit()
+
 ###################################站点配置##############################
 @login_required
 @app.route('/settings/',methods=['GET','POST'])
@@ -805,6 +833,14 @@ class inceptionWork:
                         messages = Messages(recipient=u.username, sender=self.username, title="DML工单：" + _tickets_num,
                                             content=self.username + "   提交了新工单:" + _tickets_num + " 需审核，请尽快处理！")
                         db.session.add(messages)
+                        # 发送邮件
+                        mailsettings = Options.query.all()[0]
+                        mail_subject = "新DML工单<%s>需要审核" % _tickets_num
+                        mail_content = "Dear %s：<br>　　%s在%s上提交了新工单:<a href='http://127.0.0.1:5001/' target='blank'>%s</a> ,需要您审核，请尽快处理！" % (u.username,mailsettings.site_name,self.username,_tickets_num)
+                        sendmail = mailSend(mailsettings.smtp_user, u.email, mailsettings.smtp_host,
+                                            mailsettings.smtp_port, mailsettings.smtp_user, mailsettings.smtp_password,
+                                            mail_subject, mail_content)
+                        sendmail.sendmail()
                     db.session.commit()
                     messages = Messages(recipient=self.username, sender=self.username, title="提交新DML工单：" + _tickets_num,
                                         content="Dear " + self.username + ":\n   您在<" + str(
@@ -852,6 +888,16 @@ class inceptionWork:
                                         content=message_content, add_time=datetime.datetime.now())
                     db.session.add(messages)
                     db.session.commit()
+                    mailsettings = Options.query.all()[0]
+                    _receiver = User.query.filter_by(username=__olddata.applicant).first()
+                    print(_receiver.email)
+                    mail_subject = "工单状态变更%s" % str(__olddata.tickets_num)
+                    mail_content = "Dear %s：<br>　　您在%s上提交的工单，编号:<a href='http://127.0.0.1:5001/' target='blank'>%s</a> ,已通过审核，请知悉，具体状态请点击工单编号查看！" % (
+                        __olddata.applicant, mailsettings.site_name,__olddata.tickets_num)
+                    sendmail = mailSend(mailsettings.smtp_user, _receiver.email, mailsettings.smtp_host,
+                                        mailsettings.smtp_port, mailsettings.smtp_user, mailsettings.smtp_password,
+                                        mail_subject, mail_content)
+                    sendmail.sendmail()
                     return redirect(url_for('ticketview', tickets_id=self.tickets_id))
 
             except Exception as msg:
@@ -889,8 +935,7 @@ class inceptionWork:
                 else:
                     # 检测通过执行代码块
                     __olddata = Tickets.query.filter_by(id=self.tickets_id).first()
-                    __olddata.audit_advise = self.username + " < " + datetime.datetime.now().strftime(
-                        "%Y-%m-%d %H:%S") + " > 执行。\n" + __olddata.audit_advise
+                    __olddata.audit_advise = self.username + " < " + datetime.datetime.now().strftime("%Y-%m-%d %H:%S") + " > 执行。\n" + __olddata.audit_advise
                     __olddata.is_execute = 1
                     db.session.commit()
                     message_title = "工单<" + str(__olddata.tickets_num) + ">已执行。"
@@ -900,6 +945,15 @@ class inceptionWork:
                                         content=message_content, add_time=datetime.datetime.now())
                     db.session.add(messages)
                     db.session.commit()
+                    mailsettings = Options.query.all()[0]
+                    _receiver = User.query.filter_by(username=__olddata.applicant).first()
+                    mail_subject = "工单执行%s" % str(__olddata.tickets_num)
+                    mail_content = "Dear %s：<br>　　您在%s上提交的工单，编号:<a href='http://127.0.0.1:5001/' target='blank'>%s</a> ,已由<　%s　>执行完成，请知悉，具体状态请点击工单编号查看！" % (
+                        __olddata.applicant, mailsettings.site_name, __olddata.tickets_num,self.username)
+                    sendmail = mailSend(mailsettings.smtp_user, _receiver.email, mailsettings.smtp_host,
+                                        mailsettings.smtp_port, mailsettings.smtp_user, mailsettings.smtp_password,
+                                        mail_subject, mail_content)
+                    sendmail.sendmail()
                     return redirect(url_for('ticketview', tickets_id=self.tickets_id))
 
             except Exception as msg:
@@ -976,6 +1030,15 @@ def ticketview(tickets_id):
                 messages = Messages(recipient=olddata.applicant, sender=username, title=message_title,content=message_content,add_time=datetime.datetime.now())
                 db.session.add(messages)
                 db.session.commit()
+                mailsettings = Options.query.all()[0]
+                _receiver = User.query.filter_by(username=olddata.applicant).first()
+                mail_subject = "工单拒绝%s" % str(olddata.tickets_num)
+                mail_content = "Dear %s：<br>　　您在%s上提交的工单，编号:<a href='http://127.0.0.1:5001/' target='blank'>%s</a> ,已被<　%s　>拒绝，请知悉，详情请点击工单编号查看！" % (
+                    olddata.applicant, mailsettings.site_name, olddata.tickets_num, username)
+                sendmail = mailSend(mailsettings.smtp_user, _receiver.email, mailsettings.smtp_host,
+                                    mailsettings.smtp_port, mailsettings.smtp_user, mailsettings.smtp_password,
+                                    mail_subject, mail_content)
+                sendmail.sendmail()
                 return redirect(url_for('tickets'))
                 #return render_template('tickets.html', username=username, objForm=objForm, href_name=href_name,sub_title=sub_title, result=result)
             elif ('execute' in request.form.values() and tickets_data.is_execute == 0):

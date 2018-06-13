@@ -163,7 +163,6 @@ def settings():
     href_name = "全局配置"
     newform = Settings()
     oldoptiondata = Options.query.filter().first()
-    print(oldoptiondata)
     try:
         if request.method == "GET":
             newform.site_name.data = oldoptiondata.site_name
@@ -180,7 +179,6 @@ def settings():
             newform.smtp_port.data = oldoptiondata.smtp_port
             newform.smtp_user.data = oldoptiondata.smtp_user
             newform.smtp_password.data = oldoptiondata.smtp_password
-            print(request.url,request.url.split('settings',1)[0])
             return render_template('settings.html',sucessMsg='',sub_title=sub_title,href_name=href_name, objForm=newform,username=username, myuserid=current_user.id, messages=get_message(current_user.username))
     except:
         if request.method == "GET":

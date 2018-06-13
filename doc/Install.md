@@ -31,6 +31,12 @@ Thinkdb现在处于开发中是一个雏形，很多功能暂未实现，当然�
 - #!/usr/bin/python
 + #!/usr/bin/python_old
 ```
+    8. 如果是Centos7使用firewall-cmd 则还需要修改：
+    vim /usr/bin/firewall-cmd
+```diff
+- #!/usr/bin/python
++ #!/usr/bin/python_old
+```
 ## 安装虚拟环境和依赖包
     1. 安装virtualenv:        /usr/local/python3.6/bin/pip3.6 install virtualenv
     2. 创建Thinkdb虚拟环境：      /usr/local/python3.6/bin/virtualenv /usr/local/thinkdb/venv

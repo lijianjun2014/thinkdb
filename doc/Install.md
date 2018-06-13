@@ -7,7 +7,7 @@ Thinkdb现在处于开发中是一个雏形，很多功能暂未实现，当然�
 # ThinkDB安装流程
 ## ThinkDB程序下载
     1. git clone https://github.com/lijianjun2014/thinkdb.git
-    2. cd thinkdb && mkdir /usr/local/thinkdb && cp -r {config.py,main.py,requirement,monitor/,uwsgi_conf/} /usr/local/thinkdb/
+    2. cd thinkdb && mkdir /usr/local/thinkdb && cp -r {config.py,main.py,requirement,monitor/,uwsgi_conf/，thinkdb/} /usr/local/thinkdb/
     3. views.py中Inception的连接配置块根据实际情况填写IP,端口，用户，密码等信息。
     4. 监控脚本monitor/monitor.py文件里面，需要根据实际情况更改监控历史数据存放信息
 
@@ -27,6 +27,12 @@ Thinkdb现在处于开发中是一个雏形，很多功能暂未实现，当然�
     6. 编辑/etc/profile：    echo "PATH=$PATH:/usr/local/python3.6/bin" >>/etc/profile  && source /etc/profile
     7. 修改yum文件，防止python升级导致Yum 命令失效：
        vim /usr/bin/yum
+```diff
+- #!/usr/bin/python
++ #!/usr/bin/python_old
+```
+    8. 如果是Centos7使用firewall-cmd 则还需要修改：
+    vim /usr/bin/firewall-cmd
 ```diff
 - #!/usr/bin/python
 + #!/usr/bin/python_old

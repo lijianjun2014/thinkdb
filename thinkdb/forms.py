@@ -8,7 +8,8 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password',validators=[DataRequired()])
 
 class Settings(FlaskForm):
-    sitename = StringField('sitename',render_kw={"placeholder": "站点名称"})
+    site_name = StringField('sitename',render_kw={"placeholder": "站点名称"})
+    site_url = StringField('site_url', render_kw={"placeholder": "站点URL地址"})
     monitor_frequency = StringField('监控频率',validators=[DataRequired()],render_kw={"placeholder": "监控频率分钟"})
     email_on = SelectField("是否开启邮件",choices=[('1','开启'),('0','关闭')])
     email_times = StringField('发送邮件次数',validators=[DataRequired()],render_kw={"placeholder": "发送邮件次数"})

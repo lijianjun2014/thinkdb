@@ -9,7 +9,7 @@ from thinkdb.forms import *
 import datetime,random,time,asyncio,hashlib,os,json,smtplib
 from email.mime.text import MIMEText
 from email.header import Header
-from threading import Lock
+from threading import Lock,Thread
 ####以下是为了服务端命令结果
 
 
@@ -26,7 +26,7 @@ config = {
     }
 #Inception数据库连接配置
 inception_config = {
-    'host': '192.168.79.131',
+    'host': '192.168.79.128',
     'port': 6669,
     'user': 'root',
     'password': '',
@@ -92,7 +92,7 @@ def logout():
 @login_required
 def get_message(username):
     messages = Messages.query.filter_by(recipient=username).order_by(Messages.add_time.desc()).all()
-    first_10 = Messages.query.filter_by(recipient=username).order_by(Messages.add_time.desc()).limit(5)
+    first_10 = Messages.query.filter_by(recipient=username).order_by(Messages.is_read.asc(),Messages.add_time.desc()).limit(5)
     unread_count = Messages.query.filter(and_(Messages.recipient == username, Messages.is_read == 0)).count()
     total = Messages.query.filter_by(recipient=username).count()
     return (first_10,messages,unread_count,total)
@@ -164,7 +164,11 @@ def settings():
     newform = Settings()
     oldoptiondata = Options.query.filter().first()
     if request.method == "GET":
-        newform.sitename.data = oldoptiondata.site_name
+        newform.site_name.data = oldoptiondata.site_name
+        if oldoptiondata.site_url == '':
+            newform.site_url.data = request.url.split("settings")[0]
+        else:
+            newform.site_url.data = oldoptiondata.site_url
         newform.monitor_frequency.data = oldoptiondata.monitor_frequency
         newform.email_on.data = oldoptiondata.email_on
         newform.email_times.data =oldoptiondata.email_times
@@ -174,9 +178,11 @@ def settings():
         newform.smtp_port.data = oldoptiondata.smtp_port
         newform.smtp_user.data = oldoptiondata.smtp_user
         newform.smtp_password.data = oldoptiondata.smtp_password
+        print(request.url,request.url.split('settings',1)[0])
         return render_template('settings.html',sucessMsg='',sub_title=sub_title,href_name=href_name, objForm=newform,username=username, myuserid=current_user.id, messages=get_message(current_user.username))
     if newform.validate_on_submit():
-        sitename = newform.sitename.data
+        site_name = newform.site_name.data
+        site_url = request.url.split("settings")[0]
         monitor_frequency = newform.monitor_frequency.data
         email_on = newform.email_on.data
         email_times = newform.email_times.data
@@ -187,13 +193,14 @@ def settings():
         smtp_user = newform.smtp_user.data
         smtp_password = newform.smtp_password.data
         oldoptiondata = Options.query.filter().first()
-        newoptions = Options(site_name=newform.sitename.data,monitor_frequency=newform.monitor_frequency.data,email_on = newform.email_on.data,email_times = newform.email_times.data,email_sleep = newform.email_sleep.data,receiver = newform.receiver.data,smtp_host = newform.smtp_host.data,smtp_port = newform.smtp_port.data,smtp_user = newform.smtp_user.data,smtp_password = newform.smtp_password.data)
+        newoptions = Options(site_name=newform.site_name.data,site_url=site_url,monitor_frequency=newform.monitor_frequency.data,email_on = newform.email_on.data,email_times = newform.email_times.data,email_sleep = newform.email_sleep.data,receiver = newform.receiver.data,smtp_host = newform.smtp_host.data,smtp_port = newform.smtp_port.data,smtp_user = newform.smtp_user.data,smtp_password = newform.smtp_password.data)
         if oldoptiondata is None:
             db.session.add(newoptions)
             db.session.commit()
         else:
             changeoptiondata = Options.query.filter().first()
-            changeoptiondata.site_name = newform.sitename.data
+            changeoptiondata.site_name = newform.site_name.data
+            changeoptiondata.site_url = request.url.split("settings")[0]
             changeoptiondata.monitor_frequency = newform.monitor_frequency.data
             changeoptiondata.email_on = newform.email_on.data
             changeoptiondata.email_times = newform.email_times.data
@@ -737,9 +744,9 @@ def slowdetails(checksum):
 #######################################工单模块#########################################
 #Inception检测与返回
 class inceptionWork:
-    def __init__(self,tickets_id,db_id,operation,sqlcontent,introduction,username,objForm,sub_title,href_name,template_file):
-        if tickets_id != '':
-            self.tickets_id = tickets_id
+    def __init__(self,tickets_num,db_id,operation,sqlcontent,introduction,username,objForm,sub_title,href_name,template_file):
+        if tickets_num != '':
+            self.tickets_num = tickets_num
         self.db_id = db_id
         self.target_db = MySQL_Databases.query.filter_by(id=db_id).first()
         self.username = username
@@ -816,8 +823,7 @@ class inceptionWork:
                     # 获取DBA团队用户名
                     _users = User.query.filter_by(group_id=1).all()
                     # 生成工单号
-                    _tickets_num = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S')) + str(
-                        random.randint(100, 999))
+                    _tickets_num = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S')) + str(random.randint(100, 999))
                     _auditor = "test01"  # 后期需要判断，直接反馈给上级或者DBA团队
                     _add_time = datetime.datetime.now()
                     db_id = self.db_id
@@ -831,12 +837,12 @@ class inceptionWork:
                     # 写消息到数据库
                     for u in _users:
                         messages = Messages(recipient=u.username, sender=self.username, title="DML工单：" + _tickets_num,
-                                            content=self.username + "   提交了新工单:" + _tickets_num + " 需审核，请尽快处理！")
+                                            content=self.username + "   提交了新工单:　<a href ='/ticketview/" + _tickets_num + "/'> <font color='red'>"+_tickets_num +"</font></a>　需审核，请尽快处理！")
                         db.session.add(messages)
                         # 发送邮件
                         mailsettings = Options.query.all()[0]
-                        mail_subject = "新DML工单<%s>需要审核" % _tickets_num
-                        mail_content = "Dear %s：<br>　　%s在%s上提交了新工单:<a href='http://127.0.0.1:5001/' target='blank'>%s</a> ,需要您审核，请尽快处理！" % (u.username,mailsettings.site_name,self.username,_tickets_num)
+                        mail_subject = "新工单<%s>需要审核" % _tickets_num
+                        mail_content = "Dear %s：<br>　　%s在%s上提交了新工单:<a href='%sticketview/%s/' target='blank'>%s</a> ,需要您审核，请尽快处理！" % (u.username,mailsettings.site_name,self.username,mailsettings.site_url,_tickets_num,_tickets_num)
                         sendmail = mailSend(mailsettings.smtp_user, u.email, mailsettings.smtp_host,
                                             mailsettings.smtp_port, mailsettings.smtp_user, mailsettings.smtp_password,
                                             mail_subject, mail_content)
@@ -877,7 +883,7 @@ class inceptionWork:
 
                 else:
                     # 检测通过执行代码块
-                    __olddata = Tickets.query.filter_by(id=self.tickets_id).first()
+                    __olddata = Tickets.query.filter_by(tickets_num=self.tickets_num).first()
                     __olddata.status = "通过"
                     __olddata.audit_advise = self.username + " < " + datetime.datetime.now().strftime("%Y-%m-%d %H:%S") + " > 通过。\n" + __olddata.audit_advise
                     db.session.commit()
@@ -891,13 +897,13 @@ class inceptionWork:
                     mailsettings = Options.query.all()[0]
                     _receiver = User.query.filter_by(username=__olddata.applicant).first()
                     mail_subject = "工单状态变更%s" % str(__olddata.tickets_num)
-                    mail_content = "Dear %s：<br>　　您在%s上提交的工单，编号:<a href='http://127.0.0.1:5001/' target='blank'>%s</a> ,已通过审核，请知悉，具体状态请点击工单编号查看！" % (
-                        __olddata.applicant, mailsettings.site_name,__olddata.tickets_num)
+                    mail_content = "Dear %s：<br>　　您在%s上提交的工单，编号:<a href='%sticketview/%s/' target='blank'>%s</a> ,已通过审核，请知悉，具体状态请点击工单编号查看！" % (
+                        __olddata.applicant, mailsettings.site_name,mailsettings.site_url,__olddata.tickets_num,__olddata.tickets_num)
                     sendmail = mailSend(mailsettings.smtp_user, _receiver.email, mailsettings.smtp_host,
                                         mailsettings.smtp_port, mailsettings.smtp_user, mailsettings.smtp_password,
                                         mail_subject, mail_content)
                     sendmail.sendmail()
-                    return redirect(url_for('ticketview', tickets_id=self.tickets_id))
+                    return redirect(url_for('ticketview', tickets_num=self.tickets_num))
 
             except Exception as msg:
                 errMsg = "Inception服务器连接超时！"
@@ -933,7 +939,7 @@ class inceptionWork:
 
                 else:
                     # 检测通过执行代码块
-                    __olddata = Tickets.query.filter_by(id=self.tickets_id).first()
+                    __olddata = Tickets.query.filter_by(tickets_num=self.tickets_num).first()
                     __olddata.audit_advise = self.username + " < " + datetime.datetime.now().strftime("%Y-%m-%d %H:%S") + " > 执行。\n" + __olddata.audit_advise
                     __olddata.is_execute = 1
                     db.session.commit()
@@ -947,13 +953,13 @@ class inceptionWork:
                     mailsettings = Options.query.all()[0]
                     _receiver = User.query.filter_by(username=__olddata.applicant).first()
                     mail_subject = "工单执行%s" % str(__olddata.tickets_num)
-                    mail_content = "Dear %s：<br>　　您在%s上提交的工单，编号:<a href='http://127.0.0.1:5001/' target='blank'>%s</a> ,已由<　%s　>执行完成，请知悉，具体状态请点击工单编号查看！" % (
-                        __olddata.applicant, mailsettings.site_name, __olddata.tickets_num,self.username)
+                    mail_content = "Dear %s：<br>　　您在%s上提交的工单，编号:<a href='%sticketview/%s/' target='blank'>%s</a> ,已由<　%s　>执行完成，请知悉，具体状态请点击工单编号查看！" % (
+                        __olddata.applicant, mailsettings.site_name,mailsettings.site_url, __olddata.tickets_num,__olddata.tickets_num,self.username)
                     sendmail = mailSend(mailsettings.smtp_user, _receiver.email, mailsettings.smtp_host,
                                         mailsettings.smtp_port, mailsettings.smtp_user, mailsettings.smtp_password,
                                         mail_subject, mail_content)
                     sendmail.sendmail()
-                    return redirect(url_for('ticketview', tickets_id=self.tickets_id))
+                    return redirect(url_for('ticketview', tickets_num=self.tickets_num))
 
             except Exception as msg:
                 errMsg = "Inception服务器连接超时！执行失败！"
@@ -974,13 +980,13 @@ def tickets():
     return render_template('tickets.html',errMsg='', username=username,myuserid=current_user.id,tickets_list=tickets_list, href_name=href_name, sub_title=sub_title,messages=get_message(current_user.username))
 
 #审核工单
-@app.route('/ticketview/<tickets_id>/',methods=['GET','POST'])
+@app.route('/ticketview/<tickets_num>/',methods=['GET','POST'])
 @login_required
-def ticketview(tickets_id):
+def ticketview(tickets_num):
     username = current_user.username
     sub_title = "查看工单"
     objForm=TicketsForm()
-    tickets_data = Tickets.query.filter_by(id=tickets_id).first()
+    tickets_data = Tickets.query.filter_by(tickets_num=tickets_num).first()
     href_name = "工单编号："+ str(tickets_data.tickets_num)
     #objForm = tickets_data
     if request.method == "GET":
@@ -1009,18 +1015,18 @@ def ticketview(tickets_id):
         if ('check' in request.form.values()):
             sql_content = tickets_data.sqlcontent
             introduction = tickets_data.introduction
-            inceptioncheckreturn = inceptionWork(tickets_id,tickets_data.db_id, "check", sql_content, introduction, username,objForm, sub_title, href_name, 'tickets.html')
+            inceptioncheckreturn = inceptionWork(tickets_num,tickets_data.db_id, "check", sql_content, introduction, username,objForm, sub_title, href_name, 'tickets.html')
             result = inceptioncheckreturn.inceptionAudit()
             return result
         elif ('pass' in request.form.values()):
             sql_content = tickets_data.sqlcontent
             introduction = tickets_data.introduction
-            inceptioncheckreturn = inceptionWork(tickets_id,tickets_data.db_id, "check", sql_content,introduction,username,objForm,sub_title, href_name, 'tickets.html')
+            inceptioncheckreturn = inceptionWork(tickets_num,tickets_data.db_id, "check", sql_content,introduction,username,objForm,sub_title, href_name, 'tickets.html')
             result = inceptioncheckreturn.inceptionPass()
             return result
         if objForm.validate_on_submit():
             if ('reject' in request.form.values()):
-                olddata = Tickets.query.filter_by(id=tickets_id).first()
+                olddata = Tickets.query.filter_by(id=tickets_num).first()
                 olddata.status = "拒绝"
                 olddata.audit_advise = current_user.username + " < "+ datetime.datetime.now().strftime("%Y-%m-%d %H:%S") +" > 拒绝。\n" + objForm.audit_advise.data
                 db.session.commit()
@@ -1043,7 +1049,7 @@ def ticketview(tickets_id):
             elif ('execute' in request.form.values() and tickets_data.is_execute == 0):
                 sql_content = tickets_data.sqlcontent
                 introduction = tickets_data.introduction
-                inceptioncheckreturn = inceptionWork(tickets_id, tickets_data.db_id, "execute", sql_content, introduction,username,objForm, sub_title, href_name, 'tickets.html')
+                inceptioncheckreturn = inceptionWork(tickets_num, tickets_data.db_id, "execute", sql_content, introduction,username,objForm, sub_title, href_name, 'tickets.html')
                 result = inceptioncheckreturn.inceptionExecute()
                 return result
         else:
@@ -1051,12 +1057,12 @@ def ticketview(tickets_id):
     #return redirect(url_for('tickets'))
 
 #删除工单
-@app.route('/deltickets/<tickets_id>')
+@app.route('/deltickets/<tickets_num>/')
 @login_required
-def deltickets(tickets_id):
+def deltickets(tickets_num):
     username = current_user.username
     sub_title = "查看工单"
-    ticket = Tickets.query.filter_by(id=tickets_id).first()
+    ticket = Tickets.query.filter_by(tickets_num=tickets_num).first()
     if ticket is not None:
         ticket.is_delete = 1
         db.session.commit()

@@ -71,31 +71,30 @@
  									<span>You have {{messages[3]}} messages</span>
 									<a href="javascript:location.reload();"><i class="icon-repeat"></i></a>
 								</li>
-                                {% for m in messages[0] %}
-                                <li>
-                                    <a href="{{url_for('view_message',messages_id=m.id)}}">
-										<span class="header">
-											<span class="from">
-                                                {% if m.is_read == 0 %}
-                                                <font color="#FA5833">{{m.sender}}  @  {{m.add_time}}</font>
-										    </span>
-										</span>
-                                        <span class="message">
-                                            <font color="#FA5833"> {{m.title}}</font>
-                                        </span>
-                                                {% else %}
-                                        {{m.sender}}  @  {{m.add_time}}
-										    </span>
-										</span>
-                                        <span class="message">
-                                            {{m.title}}
-                                        </span>
-                                                {% endif %}
-                                    </a>
+                                    {% for m in messages[0] %}
+                                    <li>
+                                        <a href="{{url_for('view_message',messages_id=m.id)}}">
+                                            <span class="header">
+                                                <span class="from">
+                                                    {% if m.is_read == 0 %}
+                                                    <font color="#FA5833">{{m.sender}}  @  {{m.add_time}}</font>
+                                                </span>
+                                            </span>
+                                            <span class="message">
+                                                <font color="#FA5833"> {{m.title}}</font>
+                                            </span>
+                                                    {% else %}
+                                            {{m.sender}}  @  {{m.add_time}}
+                                                </span>
+                                            </span>
+                                            <span class="message">
+                                                {{m.title}}
+                                            </span>
+                                                    {% endif %}
+                                        </a>
 
-                                </li>
-                                {% endfor %}
-
+                                    </li>
+                                    {% endfor %}
 								<li>
                             		<a class="dropdown-menu-sub-footer" href="{{url_for('messages_center')}}">View all messages</a>
 								</li>

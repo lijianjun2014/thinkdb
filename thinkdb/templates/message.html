@@ -20,7 +20,7 @@
 					<div class="task low self">
 						<div class="desc">
 							<div class="title">{{single_message.sender}}</div>
-							<div>{{single_message.content}}</div>
+							<div>{{single_message.content|safe}}</div>
 						</div>
 						<div class="time">
 							<div class="date">{{single_message.add_time}}</div>

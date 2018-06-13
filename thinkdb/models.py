@@ -327,6 +327,7 @@ class Options(db.Model):
     __tablename__ = "options"
     id = db.Column(db.SmallInteger,primary_key=True,autoincrement=True,comment="配置主键ID")
     site_name = db.Column(db.String(32),nullable=False,default='',server_default='',comment="站点名称")
+    site_url = db.Column(db.String(32),nullable=False,default='',server_default='',comment="站点url")
     monitor_frequency = db.Column(db.SmallInteger,nullable=False,default='1',server_default='1',comment="监控频率分钟")
     email_on = db.Column(db.SmallInteger,nullable=False,default='1',server_default='1',comment="是否开启邮件报警")
     email_times = db.Column(db.SmallInteger,nullable=False,default='3',server_default='3',comment="邮件发送次数")
@@ -339,7 +340,7 @@ class Options(db.Model):
     add_time = db.Column(db.DateTime, default=datetime.now, index=True, comment="添加时间")
     last_modify_time = db.Column(db.DateTime, default=datetime.now, onupdate=True, index=True, comment="最后更新时间")
     def __repr__(self):
-        return '<Option %r>' % (self.option_name)
+        return '<Option %r>' % (self.site_name)
 
 if __name__ == '__main__':
     db.create_all()

@@ -184,39 +184,44 @@ def settings():
         finally:
             return render_template('settings.html',sucessMsg='',sub_title=sub_title,href_name=href_name, objForm=newform,username=username, myuserid=current_user.id, messages=get_message(current_user.username))
 
-    if newform.validate_on_submit():
-        site_name = newform.site_name.data
-        site_url = request.url.split("settings")[0]
-        monitor_frequency = newform.monitor_frequency.data
-        email_on = newform.email_on.data
-        email_times = newform.email_times.data
-        email_sleep = newform.email_sleep.data
-        receiver = newform.receiver.data
-        smtp_host = newform.smtp_host.data
-        smtp_port = newform.smtp_port.data
-        smtp_user = newform.smtp_user.data
-        smtp_password = newform.smtp_password.data
-        oldoptiondata = Options.query.filter().first()
-        newoptions = Options(site_name=newform.site_name.data,site_url=site_url,monitor_frequency=newform.monitor_frequency.data,email_on = newform.email_on.data,email_times = newform.email_times.data,email_sleep = newform.email_sleep.data,receiver = newform.receiver.data,smtp_host = newform.smtp_host.data,smtp_port = newform.smtp_port.data,smtp_user = newform.smtp_user.data,smtp_password = newform.smtp_password.data)
-        if oldoptiondata is None:
-            db.session.add(newoptions)
-            db.session.commit()
-        else:
-            changeoptiondata = Options.query.filter().first()
-            changeoptiondata.site_name = newform.site_name.data
-            changeoptiondata.site_url = request.url.split("settings")[0]
-            changeoptiondata.monitor_frequency = newform.monitor_frequency.data
-            changeoptiondata.email_on = newform.email_on.data
-            changeoptiondata.email_times = newform.email_times.data
-            changeoptiondata.email_sleep = newform.email_sleep.data
-            changeoptiondata.receiver = newform.receiver.data
-            changeoptiondata.smtp_host = newform.smtp_host.data
-            changeoptiondata.smtp_port = newform.smtp_port.data
-            changeoptiondata.smtp_user = newform.smtp_user.data
-            changeoptiondata.smtp_password = newform.smtp_password.data
-            db.session.commit()
-            return render_template('settings.html',sucessMsg="资料更新成功",sub_title=sub_title,href_name=href_name, objForm=newform,username=username, myuserid=current_user.id, messages=get_message(current_user.username))
-
+    else:
+        if newform.validate_on_submit():
+            site_name = newform.site_name.data
+            site_url = request.url.split("settings")[0]
+            monitor_frequency = newform.monitor_frequency.data
+            email_on = newform.email_on.data
+            email_times = newform.email_times.data
+            email_sleep = newform.email_sleep.data
+            receiver = newform.receiver.data
+            smtp_host = newform.smtp_host.data
+            smtp_port = newform.smtp_port.data
+            smtp_user = newform.smtp_user.data
+            smtp_password = newform.smtp_password.data
+            newoptions = Options(site_name=site_name,site_url=site_url,monitor_frequency=monitor_frequency,email_on=email_on,email_times=email_times,email_sleep=email_sleep,receiver=receiver,smtp_host=smtp_host,smtp_port=smtp_port,smtp_user=smtp_user,smtp_password=smtp_password)
+            oldoptiondata = Options.query.filter().first()
+            if oldoptiondata is None:
+                db.session.add(newoptions)
+                db.session.commit()
+                return render_template('settings.html',sucessMsg="资料更新成功",sub_title=sub_title,href_name=href_name, objForm=newform,username=username, myuserid=current_user.id, messages=get_message(current_user.username))
+            else:
+                changeoptiondata = Options.query.filter().first()
+                changeoptiondata.site_name = newform.site_name.data
+                changeoptiondata.site_url = request.url.split("settings")[0]
+                changeoptiondata.monitor_frequency = newform.monitor_frequency.data
+                changeoptiondata.email_on = newform.email_on.data
+                changeoptiondata.email_times = newform.email_times.data
+                changeoptiondata.email_sleep = newform.email_sleep.data
+                changeoptiondata.receiver = newform.receiver.data
+                changeoptiondata.smtp_host = newform.smtp_host.data
+                changeoptiondata.smtp_port = newform.smtp_port.data
+                changeoptiondata.smtp_user = newform.smtp_user.data
+                changeoptiondata.smtp_password = newform.smtp_password.data
+                changeoptiondata.last_modify_time = datetime.datetime.now()
+                db.session.commit()
+                return render_template('settings.html',sucessMsg="资料更新成功",sub_title=sub_title,href_name=href_name, objForm=newform,username=username, myuserid=current_user.id, messages=get_message(current_user.username))
+        return render_template('settings.html', sucessMsg="请填写完整信息", sub_title=sub_title, href_name=href_name,
+                               objForm=newform, username=username, myuserid=current_user.id,
+                               messages=get_message(current_user.username))
 #用户管理中心
 @app.route('/usercenter/',methods=['GET','POST'])
 @login_required

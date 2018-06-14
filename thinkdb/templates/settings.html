@@ -134,6 +134,9 @@
                     var errMsg = {{ sucessMsg|tojson }};
                     if (errMsg !=''){
                         alert(errMsg);
+                        if (errMsg =='资料更新成功'){
+                        window.location.href='{{ url_for('settings') }}';
+                    }
                     }
                 };
                 updatesucess();

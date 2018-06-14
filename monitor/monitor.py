@@ -1,25 +1,16 @@
 #! /bin/evn python
 #coding:utf8
+#主要监控程序
+#此文件需要根据实际信息更改本文件内mysql和main函数的连接信息
 
 import datetime
 import time
 import pymysql
 import contextlib
-import logging
+import logging,string
 from multiprocessing import Process
-
-config = {
-    'host': '127.0.0.1',
-    'port': 3306,
-    'user': 'thinkdb',
-    'password': '123456',
-    'db': 'thinkdb',
-    'charset': 'utf8mb4',
-    #'cursorclass': pymysql.cursors.DictCursor,
-    }
-
 @contextlib.contextmanager
-def mysql(ip="127.0.0.1",port=3306,username="thinkdb",password="123456",db_name="information_schema"):
+def mysql(ip='127.0.0.1',port=3306,username='thinkdb',password='123456',db_name="information_schema"):
     conn = pymysql.connect(host=ip,port=int(port),user=username,password=password,connect_timeout=10,charset='utf8mb4',cursorclass=pymysql.cursors.DictCursor)
     if db_name != '':
         conn.select_db(db_name)
@@ -186,7 +177,7 @@ def check_mysql(name,ip,port,username,password,monitor_start_time):
         exec_master_log_pos = slave_info[0]['Exec_Master_Log_Pos']
         #处理MySQL_Replication表
         if exists_in_replication == 0:
-            sql_content = "insert into mysql_replication select '',%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
+            sql_content = "insert into mysql_replication select 0,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
             paras = (name,ip,port,read_only,gtid_mode,master_host,master_port,slave_io_run,slave_sql_run,delay,master_log_file,read_master_log_pos,relay_master_log_file,exec_master_log_pos,monitor_start_time,monitor_start_time)
             thinkdb_update(sql_content,paras)
         else:
@@ -223,9 +214,9 @@ def check_mysql(name,ip,port,username,password,monitor_start_time):
 
 def insert_status_history_data():
     # 转存status表的数据去历史表
-    sql_content = "insert into mysql_status_history select '',A.* from mysql_status A;"
+    sql_content = "insert into mysql_status_history select 0,A.* from mysql_status A;"
     thinkdb_update(sql_content, '')
-    sql_content = "insert into mysql_replication_history select '',A.* from mysql_replication A;"
+    sql_content = "insert into mysql_replication_history select 0,A.* from mysql_replication A;"
     thinkdb_update(sql_content,'')
 def main():
     servers = mysql_query('127.0.0.1','3306','thinkdb','123456','thinkdb',"select name,ip,port,db_user,db_password from mysql_databases where is_monitor = %s;",1)

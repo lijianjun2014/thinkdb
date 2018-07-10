@@ -68,7 +68,7 @@
                           {% for d in slowquery %}
                             <tr>
 
-                                <td class="center">{{ d.ip }}</td>
+                                <td class="center">{{ d.name }}</td>
                                 <td class="center"><a  target="_blank"  href="{{url_for('slowdetails',checksum=d.checksum)}}">{{d.checksum}}</a> </td>
 								<!--<td class="center">{{d.fingerprint}}</td>-->
 								<td class="center">{{d.db_max}}</td>
@@ -317,6 +317,83 @@
 						 </table>
 					</div>
                 </div> </div><!--/span-->
+            {% else %}
+                <div class="control-group">
+                <form class="form-horizontal" method="get">
+							<fieldset>
+
+							  <div class="controls-self-search">
+                                  {{slowsearchform.csrf_token}}
+                                  时间范围：
+                                  {{slowsearchform.start_time(class="input-date-self datepicker",id="start_time")}}To
+                                  {{slowsearchform.end_time(class="input-date-self datepicker",id="end_time")}}
+								<button type="submit" class="btn btn-primary">Search</button>
+							  </div>
+                            </fieldset>
+                </form>
+            </div>
+            <!-- search end -->
+			<!-- slow query list --->
+            <div class="row-fluid sortable">
+
+				<div class="box span12">
+					<div class="box-header" data-original-title>
+						<h2><i class="halflings-icon white user"></i><span class="break"></span>{{href_name}}</h2>
+						<div class="box-icon">
+
+							<a href="#"><i class="halflings-icon white wrench"></i></a>
+							<a href="#" class="btn-minimize"><i class="halflings-icon white chevron-up"></i></a>
+							<a href="#" class="btn-close"><i class="halflings-icon white remove"></i></a>
+						</div>
+					</div>
+
+					<div class="box-content">
+						<table class="table table table table-striped table datatable table-bordered table  table bootstrap-datatable"  style="table-layout:fixed">
+
+						  <thead>
+							  <tr>
+								  <th width="10%">服务器</th>
+                                  <th width="15%">校验值</th>
+								  <!--<th>抽象语句</th>-->
+								  <th width="10%">数据库</th>
+                                  <th width="10%">用户</th>
+                                  <th width="20%">规则名称(语句)</th>
+								  <th width="6%">次数</th>
+								  <th width="6%">平均</th>
+								  <th width="6%">最小</th>
+                                  <th width="6%">最大</th>
+                                  <!--<th>最近时间</th> -->
+
+							  </tr>
+						  </thead>
+						  <tbody>
+                          {% for d in slowquery %}
+                            <tr>
+
+                                <td class="center">{{ d.name }}</td>
+                                <td class="center"><a  target="_blank"  href="{{url_for('slowdetails',checksum=d.checksum)}}">{{d.checksum}}</a> </td>
+								<!--<td class="center">{{d.fingerprint}}</td>-->
+								<td class="center">{{d.id}}</td>
+                                <td class="center">{{d.id}}</td>
+                                <td class="center" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">{{d.sample}}</td>
+								<td class="center">{{d.times}}</td>
+								<td class="center">{{d.id}}</td>
+
+								<td class="center">{{d.query_time_min}}</td>
+                                <td class="center">{{d.query_time_max}}</td>
+								<!--<td class="center">{{d.lock_time_sum}}</td>
+                                <td class="center">{{d.lock_time_min}}</td>
+                                <td class="center">{{d.lock_time_max}}</td>
+								<td class="center">{{d.last_seen}}</td>  -->
+
+							</tr>
+
+                          {% endfor %}
+						  </tbody>
+
+					  </table>
+					</div>
+				</div><!--/span-->
             {% endif %}
             </div>
 

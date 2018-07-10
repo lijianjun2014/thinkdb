@@ -535,6 +535,11 @@ def changedb(db_id):
     newform.datacenter_id.choices = [(v.id, v.name) for v in Data_Center.query.all()]
     newform.cluster_id.choices = [(v.id, v.name) for v in Db_Cluster.query.all()]
     olddata = MySQL_Databases.query.filter_by(id=db_id).first()
+    status_db_name = olddata.name
+    status_data = MySQL_Status.query.filter_by(db_name=status_db_name).first()
+    status_data_history = MySQL_Status_History.query.filter_by(db_name=status_db_name).first()
+    replication_data = MySQL_Replication.query.filter_by(db_name=status_db_name).first()
+    replication_data_history = MySQL_Replication_History.query.filter_by(db_name=status_db_name).first()
     if olddata.is_monitor == 1:
         newform.monitor.choices = [("1", "是"), ("0", "否")]
     else:
@@ -557,7 +562,7 @@ def changedb(db_id):
         return render_template('db_type.html', objForm=newform, username=username,myuserid=current_user.id, href_name=href_name,sub_title=sub_title, messages=get_message(current_user.username))
     elif newform.validate_on_submit():
         #olddata = MySQL_Databases.query.filter_by(id=db_id).first()
-        status_db_name = olddata.name
+        #status_db_name = olddata.name
         olddata.cluster_id=newform.cluster_id.data
         olddata.name=newform.name.data
         olddata.introduction=newform.introduction.data
@@ -570,26 +575,46 @@ def changedb(db_id):
         olddata.is_monitor = newform.monitor.data
         db.session.commit()
         newdata = MySQL_Databases.query.filter_by(name=newform.name.data).first()
-        status_data = MySQL_Status.query.filter_by(db_name=status_db_name).first()
-        if newform.monitor.data == '0' and status_data is not None:
-            db.session.delete(status_data)
-            #MySQL_Replication.query.filter_by(db_name=status_db_name).delete()
-            db.session.commit()
-        elif newform.monitor.data == '1' and status_data is None:
-            status_data = MySQL_Status(db_name=newdata.name, ip=newdata.ip, port=newdata.port,
-                                       db_cluster_name=newdata.cluster.name, data_center_name=newdata.data_center.name,
-                                       is_master=newdata.is_master, is_slave=newdata.is_slave)
-            db.session.add(status_data)
-            db.session.commit()
-        elif newform.monitor.data == '1' and status_data is not None:
-            status_data.db_name=newdata.name
-            status_data.ip=newdata.ip
-            status_data.port=newdata.port
-            status_data.db_cluster_name=newdata.cluster.name
-            status_data.data_center_name=newdata.data_center.name
-            status_data.is_master=newdata.is_master
-            status_data.is_slave=newdata.is_slave
-            db.session.commit()
+        #status_data = MySQL_Status.query.filter_by(db_name=status_db_name).first()
+        if newform.monitor.data == '0':
+            if status_data is not None:
+                db.session.delete(status_data)
+                db.session.commit()
+            elif status_data_history is not None:
+                MySQL_Status_History.query.filter_by(db_name=status_db_name).delete()
+                db.session.commit()
+            elif replication_data is not None:
+                db.session.delete(replication_data)
+                db.session.commit()
+            elif replication_data_history is not None:
+                MySQL_Replication_History.query.filter_by(db_name=status_db_name).delete()
+                db.session.commit()
+        elif newform.monitor.data == '1':
+            if status_data is None:
+                status_data = MySQL_Status(db_name=newdata.name, ip=newdata.ip, port=newdata.port,
+                                           db_cluster_name=newdata.cluster.name, data_center_name=newdata.data_center.name,
+                                           is_master=newdata.is_master, is_slave=newdata.is_slave)
+                db.session.add(status_data)
+                db.session.commit()
+            elif status_data is not None:
+                db.session.delete(status_data_history)
+                status_data.db_name=newdata.name
+                status_data.ip=newdata.ip
+                status_data.port=newdata.port
+                status_data.db_cluster_name=newdata.cluster.name
+                status_data.data_center_name=newdata.data_center.name
+                status_data.is_master=newdata.is_master
+                status_data.is_slave=newdata.is_slave
+                db.session.commit()
+            elif status_data_history is not None:
+                MySQL_Status_History.query.filter_by(db_name=status_db_name).delete()
+                db.session.commit()
+            elif replication_data is not None:
+                MySQL_Replication.query.filter_by(db_name=status_db_name).delete()
+                db.session.commit()
+            elif replication_data_history is not None:
+                MySQL_Replication_History.query.filter_by(db_name=status_db_name).delete()
+                db.session.commit()
         return redirect(url_for('dbcenter'))
     return render_template('db_type.html', username=username,myuserid=current_user.id, objForm=newform, href_name=href_name, sub_title=sub_title, messages=get_message(current_user.username))
 #删除数据库集群
@@ -603,6 +628,7 @@ def deldb(db_id):
         if deldbd_data.is_monitor == 1:
             del_monitor_data = MySQL_Status.query.filter_by(db_name=deldbd_data.name).delete()
             del_monitor_status_data = MySQL_Status_History.query.filter_by(db_name=deldbd_data.name).delete()
+            del_replication_data = MySQL_Replication.query.filter_by(db_name=deldbd_data.name).delete()
             db.session.commit()
         db.session.delete(deldbd_data)
         db.session.commit()
@@ -686,6 +712,52 @@ def replication_echarts(db_name):
             time_range = request.args.get("time_range")
         return render_template('charts.html', db_name=db_name,username=username, myuserid=current_user.id, slowquery=slowquery, href_name=href_name, sub_title=sub_title,time_range=time_range, messages=get_message(current_user.username))
 
+
+# 慢查询分析页面_按服务器维度统计
+@app.route('/slowquerylist/', methods=['GET', 'POST'])
+@login_required
+def slowquerylist():
+    # 创建数据库连接
+    username = current_user.username
+    sub_title = "慢查询分析"
+    href_name = "慢查询服务器列表"
+    slowsearchform = SlowSearchForm()
+    if request.method == "GET":
+        if request.args.get('start_time') is None or request.args.get('start_time') == '':
+            start_time = (datetime.datetime.now() + datetime.timedelta(days=-3)).strftime("%Y-%m-%d")
+            start_time = str(start_time) + " 00:00:00"
+        else:
+            start_time = datetime.datetime.strptime(request.args.get('start_time'), "%m/%d/%Y")
+        if request.args.get('end_time') is None or request.args.get('end_time') == '':
+            end_time = (datetime.datetime.now()).strftime("%Y-%m-%d %H:%M:%S")
+            # end_time = 'now()'
+        else:
+            end_time = datetime.datetime.strptime(request.args.get('end_time'), "%m/%d/%Y")
+            # end_time = str(end_time) + " 23:59:59"
+        connection = pymysql.connect(**config)
+        cursor = connection.cursor()
+        # 执行sql语句，进行查询
+        # sql = 'select C.ip,B.serverid_max,format(sum(B.Query_time_median)/count(*),2) as "avg",sum(ts_cnt) as "times",A.checksum, A.last_seen,B.db_max, B.user_max,format(min(B.query_time_min),2) as query_time_min,format(max(B.query_time_max),2) as "query_time_max",A.fingerprint,SUBSTRING_INDEX(SUBSTRING_INDEX(B.sample,"|*",-1),"*|",1) as "sample"  FROM mysql_slow_query_review A JOIN  mysql_slow_query_review_history B ON A.checksum = B.checksum JOIN mysql_databases C on C.id = B.serverid_max WHERE  1 AND B.last_modify_time BETWEEN %s AND %s GROUP BY A.checksum'
+        sql = 'select C.name,sum(ts_cnt) as "times",format(min(B.query_time_min),2) as query_time_min,format(max(B.query_time_max),2) as "query_time_max",SUBSTRING_INDEX(SUBSTRING_INDEX(B.sample,"|*",-1),"*|",1) as "sample"  FROM  mysql_slow_query_review_history B JOIN mysql_databases C on C.id = B.serverid_max WHERE  1 AND B.last_modify_time BETWEEN %s AND %s GROUP BY C.id'
+        cursor.execute(sql, (start_time, end_time))
+        # 获取查询结果
+        slowquery = cursor.fetchall()
+        print(slowquery)
+        # 最慢的10条语句，进行查询
+        # top10slowest_sql = 'select C.name,B.serverid_max, format(sum(B.Query_time_median)/count(*),2) as "avg",sum(ts_cnt) as "times",B.checksum,B.db_max, B.user_max,format(min(B.query_time_min),2) as query_time_min,format(max(B.query_time_max),2) as "query_time_max",SUBSTRING_INDEX(SUBSTRING_INDEX(B.sample,"|*",-1),"*|",1) as "sample"  FROM  mysql_slow_query_review_history B JOIN mysql_databases C on C.id = B.serverid_max WHERE  1 AND B.last_modify_time BETWEEN %s AND %s GROUP BY B.checksum ORDER BY sum(B.Query_time_median)/count(*) desc limit 10'
+        # cursor.execute(top10slowest_sql, (start_time, end_time))
+        # 获取最慢10条查询结果
+        # top10slowest = cursor.fetchall()
+        # 最频繁的10条语句，进行查询
+        # top10frequent_sql = 'select C.name,B.serverid_max, format(sum(B.Query_time_median)/count(*),2) as "avg",sum(ts_cnt) as "times",B.checksum,B.db_max,B.user_max,format(min(B.query_time_min),2) as query_time_min,format(max(B.query_time_max),2) as "query_time_max",SUBSTRING_INDEX(SUBSTRING_INDEX(B.sample,"|*",-1),"*|",1) as "sample"  FROM mysql_slow_query_review_history B JOIN mysql_databases C on C.id = B.serverid_max WHERE  1 AND B.last_modify_time BETWEEN %s AND %s GROUP BY B.checksum  ORDER BY times desc limit 10'
+        # cursor.execute(top10frequent_sql, (start_time, end_time))
+        # 获取最慢10条查询结果
+        cursor.close()
+        connection.close()
+        return render_template('slowquery.html', username=username, myuserid=current_user.id, slowquery=slowquery,
+                               href_name=href_name, sub_title=sub_title, messages=get_message(current_user.username),
+                               slowsearchform=slowsearchform)
+
 #慢查询分析页面
 @app.route('/slowquery/',methods=['GET','POST'])
 @login_required
@@ -710,8 +782,10 @@ def slowquery():
         connection = pymysql.connect(**config)
         cursor = connection.cursor()
         # 执行sql语句，进行查询
-        sql = 'select C.ip,B.serverid_max,format(sum(B.Query_time_median)/count(*),2) as "avg",sum(ts_cnt) as "times",A.checksum, A.last_seen,B.db_max, B.user_max,format(min(B.query_time_min),2) as query_time_min,format(max(B.query_time_max),2) as "query_time_max",A.fingerprint,SUBSTRING_INDEX(SUBSTRING_INDEX(B.sample,"|*",-1),"*|",1) as "sample"  FROM mysql_slow_query_review A JOIN  mysql_slow_query_review_history B ON A.checksum = B.checksum JOIN mysql_databases C on C.id = B.serverid_max WHERE  1 AND B.last_modify_time BETWEEN %s AND %s GROUP BY A.checksum'
+        #sql = 'select C.ip,B.serverid_max,format(sum(B.Query_time_median)/count(*),2) as "avg",sum(ts_cnt) as "times",A.checksum, A.last_seen,B.db_max, B.user_max,format(min(B.query_time_min),2) as query_time_min,format(max(B.query_time_max),2) as "query_time_max",A.fingerprint,SUBSTRING_INDEX(SUBSTRING_INDEX(B.sample,"|*",-1),"*|",1) as "sample"  FROM mysql_slow_query_review A JOIN  mysql_slow_query_review_history B ON A.checksum = B.checksum JOIN mysql_databases C on C.id = B.serverid_max WHERE  1 AND B.last_modify_time BETWEEN %s AND %s GROUP BY A.checksum'
+        sql = 'select C.name,B.serverid_max,format(sum(B.Query_time_median)/count(*),2) as "avg",sum(ts_cnt) as "times",B.checksum, B.db_max, B.user_max,format(min(B.query_time_min),2) as query_time_min,format(max(B.query_time_max),2) as "query_time_max",SUBSTRING_INDEX(SUBSTRING_INDEX(B.sample,"|*",-1),"*|",1) as "sample"  FROM  mysql_slow_query_review_history B JOIN mysql_databases C on C.id = B.serverid_max WHERE  1 AND B.last_modify_time BETWEEN %s AND %s GROUP BY B.checksum'
         cursor.execute(sql,(start_time, end_time))
+        print(sql)
         # 获取查询结果
         slowquery = cursor.fetchall()
         # 最慢的10条语句，进行查询

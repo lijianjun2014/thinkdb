@@ -61,7 +61,7 @@
                                     {% elif d.is_master == 0 and d.is_slave == 1 %}
                                     <span class="label label-warning" title data-rel="tooltip"   data-original-title="从库">Slave</span>
                                     {% elif d.is_master == 1 and d.is_slave == 1 %}
-                                    <span class="label label-important" title data-rel="tooltip"   data-original-title="独立主机">Cascade</span>
+                                    <span class="label label-important" title data-rel="tooltip"   data-original-title="级联主库">Cascade</span>
                                     {% else %}
                                     <span class="label label-important" title data-rel="tooltip"   data-original-title="独立主机">Alone</span>
                                     {% endif %}

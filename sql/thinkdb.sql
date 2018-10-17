@@ -73,7 +73,7 @@ CREATE TABLE `db_cluster` (
 -- ----------------------------
 INSERT INTO `db_cluster` VALUES ('1', '老测数据库', 'online', '测试用户组——变更', '测试申请人1', '2018-04-19 09:36:32', '2018-05-15 13:27:44');
 INSERT INTO `db_cluster` VALUES ('2', 'In_Test', 'online', '内网测试集群1', '测试申请人1', '2018-05-09 09:22:20', '2018-05-09 09:22:20');
-INSERT INTO `db_cluster` VALUES ('3', 'Real_Online_DBS', 'online', '线上数据库集群', '李建军', '2018-05-15 10:53:49', '2018-05-15 10:53:49');
+INSERT INTO `db_cluster` VALUES ('3', 'Real_Online_DBS', 'online', '线上数据库集群', '测试申请人1', '2018-05-15 10:53:49', '2018-05-15 10:53:49');
 INSERT INTO `db_cluster` VALUES ('4', 'New_Test_DB', 'online', '新测数据库', '测试申请人1', '2018-05-15 13:10:52', '2018-05-15 13:13:52');
 INSERT INTO `db_cluster` VALUES ('5', '本地虚拟机', 'online', '本地虚拟机', '测试申请人1', '2018-05-15 14:32:51', '2018-05-15 14:32:51');
 
@@ -483,7 +483,7 @@ CREATE TABLE `options` (
   KEY `ix_options_last_modify_time` (`last_modify_time`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
-INSERT INTO `options` VALUES ('1', 'ThinkDb数据库管理平台', 'http://127.0.0.1:5001/', '1', '1', '3', '120', 'rewiner@qq.com', 'smtp.qq.com', '465', '33359848@qq.com', 'asasax2asas', '2018-06-13 18:05:35', '0000-00-00 00:00:00');
+INSERT INTO `options` VALUES ('1', 'ThinkDb数据库管理平台', 'http://127.0.0.1:5001/', '1', '1', '3', '120', 'test@qq.com', 'smtp.qq.com', '465', 'test@qq.com', 'asasax2asas', '2018-06-13 18:05:35', '0000-00-00 00:00:00');
 
 -- ----------------------------
 -- Table structure for tickets
@@ -543,7 +543,7 @@ CREATE TABLE `users` (
 -- ----------------------------
 -- Records of users
 -- ----------------------------
-INSERT INTO `users` VALUES ('1', 'admin', 'md5$nhxciNke$90e131056e330f703c36d247f9cc43d9', 'admin', '18030451081@qq.com', '正常', '1', '', '2018-04-19 09:32:10', '2018-05-21 17:31:15');
+INSERT INTO `users` VALUES ('1', 'admin', 'md5$nhxciNke$90e131056e330f703c36d247f9cc43d9', 'admin', 'test@qq.com', '正常', '1', '', '2018-04-19 09:32:10', '2018-05-21 17:31:15');
 
 -- ----------------------------
 -- Table structure for user_group

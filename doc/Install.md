@@ -48,8 +48,9 @@ Thinkdb现在处于开发中是一个雏形，很多功能暂未实现，当然�
     2. /usr/local/nginx/sbin/nginx    如报错请百度解决nginx报错
     3. 启动uwsgi:   /usr/local/thinkdb/venv/bin/uwsgi --ini /usr/local/thinkdb/uwsgi_conf/uwsgi.conf &
 ## 导入数据与表结构：
-    登录数据库，创建thinkdb数据库，导入thinkdb中sql文件夹下的数据。
-    现在用admin/admin888 来查看效果吧。
+    1.登录数据库，创建thinkdb数据库，导入thinkdb中sql文件夹下的数据。
+    2.修改config.py和 thinkdb/views.py中的数据库连接信息
+    3.现在用admin/admin888 来查看效果吧。
 
 ## Python3使用Inception需要修改的地方：
   1、如果按照正确格式书写后还是报错：2576, 'Must start as begin statement。解决方案：<br>

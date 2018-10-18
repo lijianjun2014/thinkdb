@@ -182,7 +182,7 @@ CREATE TABLE `mysql_replication_history` (
   KEY `ix_mysql_replication_history_ip` (`ip`),
   KEY `ix_mysql_replication_history_db_name` (`db_name`),
   KEY `ix_mysql_replication_history_mysql_replication_id` (`mysql_replication_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=79220 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Table structure for mysql_slow_query_review
@@ -538,12 +538,12 @@ CREATE TABLE `users` (
   KEY `ix_users_status` (`status`),
   KEY `ix_users_real_name` (`real_name`),
   CONSTRAINT `users_ibfk_1` FOREIGN KEY (`group_id`) REFERENCES `user_group` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of users
 -- ----------------------------
-INSERT INTO `users` VALUES ('1', 'admin', 'md5$nhxciNke$90e131056e330f703c36d247f9cc43d9', 'admin', 'test@qq.com', '正常', '1', '', '2018-04-19 09:32:10', '2018-05-21 17:31:15');
+INSERT INTO `users` VALUES ('1', 'admin', 'md5$TLwCXeEg$a2aac45bd2cb0dce7e01b0b41780baad', 'admin', 'test@qq.com', '正常', '1', '', '2018-04-19 09:32:10', '2018-05-21 17:31:15');
 
 -- ----------------------------
 -- Table structure for user_group

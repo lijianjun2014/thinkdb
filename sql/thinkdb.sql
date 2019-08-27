@@ -43,7 +43,7 @@ CREATE TABLE `data_center` (
   `last_modify_time` datetime DEFAULT NULL COMMENT '最后更新时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 -- ----------------------------
 -- Records of data_center
 -- ----------------------------
@@ -66,7 +66,7 @@ CREATE TABLE `db_cluster` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `ix_db_cluster_name` (`name`),
   KEY `ix_db_cluster_applicant` (`applicant`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of db_cluster
@@ -93,7 +93,7 @@ CREATE TABLE `messages` (
   PRIMARY KEY (`id`),
   KEY `ix_messages_sender` (`sender`),
   KEY `ix_messages_recipient` (`recipient`)
-) ENGINE=InnoDB AUTO_INCREMENT=287 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Table structure for mysql_databases
@@ -124,7 +124,7 @@ CREATE TABLE `mysql_databases` (
   KEY `ix_mysql_databases_ip` (`ip`),
   CONSTRAINT `mysql_databases_ibfk_1` FOREIGN KEY (`cluster_id`) REFERENCES `db_cluster` (`id`),
   CONSTRAINT `mysql_databases_ibfk_2` FOREIGN KEY (`datacenter_id`) REFERENCES `data_center` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Table structure for mysql_replication
@@ -152,7 +152,7 @@ CREATE TABLE `mysql_replication` (
   UNIQUE KEY `ix_mysql_replication_db_name` (`db_name`),
   KEY `ix_mysql_replication_master_host` (`master_host`),
   KEY `ix_mysql_replication_ip` (`ip`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Table structure for mysql_replication_history
@@ -182,7 +182,7 @@ CREATE TABLE `mysql_replication_history` (
   KEY `ix_mysql_replication_history_ip` (`ip`),
   KEY `ix_mysql_replication_history_db_name` (`db_name`),
   KEY `ix_mysql_replication_history_mysql_replication_id` (`mysql_replication_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Table structure for mysql_slow_query_review
@@ -212,8 +212,8 @@ CREATE TABLE `mysql_slow_query_review_history` (
   `user_max` varchar(100) DEFAULT NULL,
   `checksum` bigint(20) unsigned NOT NULL,
   `sample` text NOT NULL,
-  `ts_min` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `ts_max` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `ts_min` datetime NOT NULL DEFAULT '1000-01-01 00:00:01',
+  `ts_max` datetime NOT NULL DEFAULT '1000-01-01 00:01:01',
   `ts_cnt` float DEFAULT NULL,
   `Query_time_sum` float DEFAULT NULL,
   `Query_time_min` float DEFAULT NULL,
@@ -483,7 +483,7 @@ CREATE TABLE `options` (
   KEY `ix_options_last_modify_time` (`last_modify_time`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
-INSERT INTO `options` VALUES ('1', 'ThinkDb数据库管理平台', 'http://127.0.0.1:5001/', '1', '1', '3', '120', 'test@qq.com', 'smtp.qq.com', '465', 'test@qq.com', 'asasax2asas', '2018-06-13 18:05:35', '0000-00-00 00:00:00');
+INSERT INTO `options` VALUES ('1', 'ThinkDb数据库管理平台', 'http://127.0.0.1:5001/', '1', '1', '3', '120', 'test@qq.com', 'smtp.qq.com', '465', 'test@qq.com', 'asasax2asas', '2018-06-13 18:05:35', '2018-06-13 18:05:35');
 
 -- ----------------------------
 -- Table structure for tickets
@@ -538,7 +538,7 @@ CREATE TABLE `users` (
   KEY `ix_users_status` (`status`),
   KEY `ix_users_real_name` (`real_name`),
   CONSTRAINT `users_ibfk_1` FOREIGN KEY (`group_id`) REFERENCES `user_group` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of users
@@ -557,7 +557,7 @@ CREATE TABLE `user_group` (
   `last_modify_time` datetime DEFAULT NULL COMMENT '最后更新时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `group_name` (`group_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of user_group
@@ -565,68 +565,3 @@ CREATE TABLE `user_group` (
 INSERT INTO `user_group` VALUES ('1', 'Super_DBA', '高级DBA', '2018-04-19 09:31:32', '2018-04-19 09:39:47');
 INSERT INTO `user_group` VALUES ('2', 'Intern_DBA', '实习DBA', '2018-04-19 09:39:23', '2018-04-19 09:39:54');
 INSERT INTO `user_group` VALUES ('3', '测试组1', '测试用户组——变更', '2018-04-25 14:24:00', '2018-04-25 14:24:00');
-
--- ----------------------------
--- Table structure for tickets
--- ----------------------------
-DROP TABLE IF EXISTS `tickets`;
-CREATE TABLE `tickets` (
-  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '工单ID',
-  `tickets_num` bigint(20) NOT NULL DEFAULT '0' COMMENT '工单编号',
-  `applicant` varchar(16) NOT NULL DEFAULT '' COMMENT '提交人',
-  `auditor` varchar(16) NOT NULL DEFAULT '' COMMENT '审核人',
-  `sqlcontent` text NOT NULL COMMENT '待审核的语句内容',
-  `db_id` int(11) DEFAULT NULL,
-  `status` varchar(16) NOT NULL DEFAULT '' COMMENT '工单状态',
-  `is_execute` smallint(6) NOT NULL DEFAULT '0' COMMENT '工单是否已经执行',
-  `is_delete` smallint(6) NOT NULL DEFAULT '0' COMMENT '工单逻辑删除,0:正常，1：删除',
-  `audit_advise` text NOT NULL COMMENT '审核意见',
-  `introduction` varchar(10) NOT NULL DEFAULT '' COMMENT '工单简介',
-  `type` varchar(6) NOT NULL DEFAULT '' COMMENT '工单类型：DML，DDL',
-  `add_time` datetime DEFAULT NULL COMMENT '提交时间',
-  `last_modify_time` datetime NOT NULL COMMENT '最后变更时间',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `ix_tickets_tickets_num` (`tickets_num`),
-  KEY `db_id` (`db_id`),
-  KEY `ix_tickets_add_time` (`add_time`),
-  KEY `ix_tickets_applicant` (`applicant`),
-  CONSTRAINT `tickets_ibfk_1` FOREIGN KEY (`db_id`) REFERENCES `mysql_databases` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=90 DEFAULT CHARSET=utf8;
-
--- ----------------------------
--- Table structure for users
--- ----------------------------
-DROP TABLE IF EXISTS `users`;
-CREATE TABLE `users` (
-  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '用户ID',
-  `username` varchar(64) NOT NULL DEFAULT '' COMMENT '用户名',
-  `password` varchar(128) NOT NULL DEFAULT '' COMMENT '密码',
-  `real_name` varchar(16) NOT NULL DEFAULT '' COMMENT '真实姓名',
-  `email` varchar(64) NOT NULL DEFAULT '' COMMENT '邮件地址',
-  `status` varchar(10) NOT NULL DEFAULT '' COMMENT '状态',
-  `group_id` int(11) DEFAULT NULL COMMENT '用户组ID',
-  `privileges` varchar(256) NOT NULL DEFAULT '' COMMENT 'url权限',
-  `add_time` datetime DEFAULT NULL COMMENT '添加日期',
-  `last_modify_time` datetime DEFAULT NULL COMMENT '最后更新时间',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `ix_users_email` (`email`),
-  UNIQUE KEY `ix_users_username` (`username`),
-  KEY `group_id` (`group_id`),
-  KEY `ix_users_status` (`status`),
-  KEY `ix_users_real_name` (`real_name`),
-  CONSTRAINT `users_ibfk_1` FOREIGN KEY (`group_id`) REFERENCES `user_group` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
-
--- ----------------------------
--- Table structure for user_group
--- ----------------------------
-DROP TABLE IF EXISTS `user_group`;
-CREATE TABLE `user_group` (
-  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '用户组ID',
-  `group_name` varchar(32) NOT NULL DEFAULT '' COMMENT '组名称',
-  `introduction` varchar(16) NOT NULL DEFAULT '' COMMENT '用户组简介',
-  `add_time` datetime DEFAULT NULL COMMENT '添加时间',
-  `last_modify_time` datetime DEFAULT NULL COMMENT '最后更新时间',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `group_name` (`group_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;

@@ -15,8 +15,9 @@ Thinkdb现在处于开发中是一个雏形，很多功能暂未实现，当然�
 ## Nginx安装
     1. 下载nginx安装包：wget http://nginx.org/download/nginx-1.10.3.tar.gz
     2. 解压:   tar -zxf nginx-1.10.3.tar.gz
-    3. 编译:   cd nginx-1.10.3 && ./configure --prefix=/usr/local/nginx
-    4. 安装：  make && make install
+    3. 安装依赖包:   yum -y install pcre-devel zlib openssl openssl-devel
+    4. 编译:   cd nginx-1.10.3 && ./configure --prefix=/usr/local/nginx
+    5. 安装：  make && make install
 
 ## Python升级
     1. 下载并解压好Python3.6,进入目录

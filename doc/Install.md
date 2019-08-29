@@ -28,6 +28,7 @@ Thinkdb现在处于开发中是一个雏形，很多功能暂未实现，当然�
     6. 编辑/etc/profile：    echo "PATH=$PATH:/usr/local/python3.6/bin" >>/etc/profile  && source /etc/profile
     7. 修改yum文件，防止python升级导致Yum 命令失效：
        vim /usr/bin/yum
+       vim /usr/libexec/urlgrabber-ext-down   (centos7.6!如果升级版本后，yum得时候报语法错误，看下更改下相应文件得python即可)
 ```diff
 - #!/usr/bin/python
 + #!/usr/bin/python_old
